@@ -31,9 +31,9 @@ Caltrain changes its timetable about once a year.
 Two GitHub Actions workflows keep the feed current, with no laptop and no
 cloud server involved.
 
-**Update schedule** (`.github/workflows/update-schedule.yml`), started by
-hand from the Actions tab or the GitHub app, with an optional go-live
-date:
+**Update schedule** (`.github/workflows/update-schedule.yml`) runs every
+Monday, and whenever it's started by hand from the Actions tab or the GitHub
+app, optionally with a go-live date:
 
 1. Downloads Caltrain's GTFS and builds `schedule.json` from it in
    TypeScript (`scripts/schedule/build.ts`, ported from next-caltrain-pwa's
@@ -43,12 +43,21 @@ date:
    stops, an impossible time) stop the run; warnings (a train reaching a
    station before the one it left, i.e. bad GTFS data) are reported.
 3. If the GTFS `feed_version` is the same as the newest schedule file's,
-   stops: nothing changed.
-4. Otherwise writes `public/feed/schedule-<go-live>.json` and opens a pull
-   request whose description lists what changed (trains added, removed and
-   retimed; special dates) and any warnings. The go-live date defaults to
-   the timetable's own start date (`feed_start_date`), or today if that's
-   past.
+   stops: no new timetable. That's the usual Monday.
+4. **A new timetable and no go-live date: asks.** It writes nothing, and
+   opens a GitHub issue, "New Caltrain timetable: when should it go live?",
+   with GTFS's start date (`feed_start_date`), the "Effective" date from
+   [Caltrain's schedules page](https://www.caltrain.com/schedules/pdfs),
+   what changed and the checks. A later run updates the same issue.
+5. **A new timetable and a go-live date** (you answering the issue by
+   running the workflow with the date): writes
+   `public/feed/schedule-<go-live>.json` and opens a pull request listing
+   what changed (trains added, removed and retimed; special dates) and any
+   warnings, which closes the issue.
+
+The go-live date is always a person's decision: GTFS and Caltrain's page
+only suggest it. (Caltrain's last change took effect January 31, 2026, and
+both agreed; the next is expected around January 2027.)
 
 **Switch schedule** (`.github/workflows/switch-schedule.yml`), daily at
 3:30 AM PDT (2:30 AM PST), after the schedule day starts: copies the newest
@@ -68,9 +77,11 @@ adds the dated file; the switch makes it live.
 - **The files are formatted one train per line,** so a pull request shows
   exactly which trains changed.
 - **GitHub turns off scheduled workflows** in public repos after 60 days
-  without activity. An update's pull request counts as activity, and
+  without activity (commits, issues, pull requests; scheduled runs don't
+  count). The question issue and the update's pull request count, and
   Caltrain publishes a new timetable shortly before it takes effect, so the
-  switch will be running when it matters. If not, run it by hand.
+  workflows will be running when it matters. If they've been turned off,
+  GitHub says so on the Actions tab, and either can be run by hand.
 - **The switch deploys itself:** a push made with a workflow's own token
   doesn't start other workflows, so it can't rely on the CI deploy.
 - **Locally:** `npm run schedule:update -- --go-live YYYY-MM-DD` and
@@ -230,6 +241,7 @@ Both serve the feed from `public/feed/`. To compare with another feed, set
 run dev`.
 
 ```bash
-npm run schedule:update -- --go-live 2027-01-30   # what the Update schedule button runs
+npm run schedule:update                          # check; with a new timetable, print the question
+npm run schedule:update -- --go-live 2027-01-30   # write that timetable's dated file
 npm run schedule:switch                           # what the daily switch runs
 ```

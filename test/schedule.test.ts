@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildSchedule, feedVersionMs } from '../scripts/schedule/build.ts'
 import { changes, check, formatSchedule } from '../scripts/schedule/check.ts'
+import { effectiveDate } from '../scripts/schedule/caltrain.ts'
 import { liveOn, pacificToday } from '../scripts/schedule/files.ts'
 import { parseCsv } from '../scripts/schedule/gtfs.ts'
 
@@ -156,6 +157,25 @@ describe('Schedule pipeline', () => {
 
     it('is null before any schedule goes live', () => {
       expect(liveOn('2025-12-31', dates)).toBeNull()
+    })
+  })
+
+  describe('.effectiveDate()', () => {
+    context("on Caltrain's schedules page", () => {
+      const html = `<h2>Temporary Schedules</h2>
+        <a>Weekend Schedule (PDF)</a> - Effective 7/11-12, 8/8-9, 8/22-23 and 9/19-20, 2026
+        <h2>Regular Service Schedules</h2>
+        <a>Weekday Schedule (PDF)</a> - Effective January 31, 2026
+        <a>Weekend Schedule (PDF)</a> - Effective January 31, 2026
+        <a>Weekday Schedule (PDF)</a> - Effective September 21, 2024`
+
+      it("is the current weekday schedule's date, not a temporary or older one", () => {
+        expect(effectiveDate(html)).toBe('2026-01-31')
+      })
+    })
+
+    context('when the page no longer says', () => {
+      it('is null', () => { expect(effectiveDate('<p>Schedules</p>')).toBeNull() })
     })
   })
 
