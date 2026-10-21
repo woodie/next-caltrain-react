@@ -1,13 +1,12 @@
-import { Button } from '@progress/kendo-react-buttons'
 import { DatePicker } from '@progress/kendo-react-dateinputs'
 import { DropDownList } from '@progress/kendo-react-dropdowns'
-import { calendarIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
+import { checkIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { useState } from 'react'
 import { CalendarTrip, type PlanMode } from '../lib/CalendarTrip'
 import { tripDepart } from '../lib/CaltrainService'
-import { CaltrainSchedule, scheduleLabel } from '../lib/Schedule'
+import { CaltrainSchedule } from '../lib/Schedule'
 import type { TripViewModel } from '../lib/TripViewModel'
-import { IconButton, StationNames } from './common'
+import { IconButton } from './common'
 
 const modes: { text: string, value: PlanMode }[] = [
   { text: 'Leave at', value: 'leave' },
@@ -25,11 +24,13 @@ interface Props {
 }
 
 // Plan a trip for the calendar, like Google Maps: Leave at / Arrive by, a
-// time and a date, then a prefilled Google Calendar event.
+// date and a time, then a prefilled Google Calendar event.
 export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
   const [mode, setMode] = useState(modes[0])
   const [time, setTime] = useState(() => initialTime(vm))
   const [date, setDate] = useState(() => initialDate(vm))
+  // The long date doesn't fit next to the other two on the narrowest phones.
+  const narrow = window.innerWidth < 390
 
   const isoDate = CalendarTrip.isoDate(date)
   const scheduleType = CaltrainSchedule.optionIndex(isoDate, date.getDay(), vm.schedule.specialDates)
@@ -42,7 +43,7 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
 
   const addToCalendar = () => {
     if (!planned) return
-    const details = CalendarTrip.html(vm.origin, vm.destination, trains)
+    const details = CalendarTrip.notes(vm.origin, vm.destination, trains)
     window.open(CalendarTrip.googleUrl(CalendarTrip.title(vm.destination), isoDate, planned, details), '_blank', 'noopener')
   }
 
@@ -51,31 +52,33 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
       <div className="toolbar">
         <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />
         <span className="title centered">Create Calendar Event</span>
-        <span className="icon-placeholder" />
+        {/* Adds the event, the same green check as the station screen's Save. */}
+        {planned
+          ? <IconButton icon={checkIcon} label="Add to Google Calendar" onClick={addToCalendar} className="confirm" />
+          : <span className="icon-placeholder" />}
       </div>
       <div className="calendar-content">
-        <StationNames origin={vm.origin} destination={vm.destination} onTap={showStationSelection} />
+        <button type="button" className="pill" onClick={showStationSelection}>
+          {vm.origin} to {vm.destination}
+        </button>
+        {/* One line: (Leave at) (Oct 21, 2026) (4:20 PM), date then time like
+            a calendar's own start row, or (10/21/26) on a narrow phone. */}
         <div className="calendar-row">
-          <DropDownList data={modes} textField="text" dataItemKey="value" value={mode} onChange={(e) => setMode(e.value)} />
-          <span className="k-input k-input-md k-rounded-md k-input-solid">
+          <DropDownList data={modes} textField="text" dataItemKey="value" value={mode} rounded="full" onChange={(e) => setMode(e.value)} />
+          <DatePicker value={date} onChange={(e) => e.value && setDate(e.value)} format={narrow ? 'M/d/yy' : 'MMM d, yyyy'} rounded="full" className={narrow ? 'narrow' : undefined} />
+          <span className="k-input k-input-md k-rounded-full k-input-solid time">
             <input type="time" className="k-input-inner" aria-label="Time" value={timeValue(time)} onChange={(e) => e.target.value && setTime(parseTime(e.target.value))} />
           </span>
         </div>
-        <div className="calendar-row">
-          <DatePicker value={date} onChange={(e) => e.value && setDate(e.value)} format="EEE, MMM d" />
-          <span className="schedule-label">{scheduleLabel[scheduleType]}</span>
+        {/* The event as it lands in the calendar: the title, then the notes. */}
+        <div className="event">
+          {planned
+            ? <>
+                <div>{CalendarTrip.title(vm.destination)}</div>
+                <div>{CalendarTrip.notes(vm.origin, vm.destination, trains)}</div>
+              </>
+            : <div>No train fits that time.</div>}
         </div>
-        <div className="planned-trains">
-          {trains.length === 0 && <div className="no-trains">No train fits that time.</div>}
-          {trains.map((train) => (
-            <div key={train.label} className={train.selected ? 'selection selection-arriving' : ''}>
-              {CalendarTrip.line(train)}
-            </div>
-          ))}
-        </div>
-        <Button className="add-to-calendar" fillMode="outline" svgIcon={calendarIcon} disabled={!planned} onClick={addToCalendar}>
-          Add to Google Calendar
-        </Button>
       </div>
     </div>
   )

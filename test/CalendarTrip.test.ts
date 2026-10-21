@@ -46,7 +46,7 @@ describe('CalendarTrip', () => {
     })
   })
 
-  describe('.line() and .html()', () => {
+  describe('.line() and .notes()', () => {
     const trains = CalendarTrip.neighbors(routes, CalendarTrip.find(routes, 'leave', 17 * 60 + 55))
 
     it('formats a train', () => {
@@ -54,8 +54,9 @@ describe('CalendarTrip', () => {
         ['#523  5:43pm – 5:59pm', '#151  5:55pm – 6:17pm', '#425  6:10pm – 6:28pm'])
     })
 
-    it('bolds the planned train', () => {
-      expect(CalendarTrip.html('Palo Alto', 'San Mateo', trains)).toContain('<b>#151&nbsp; 5:55pm – 6:17pm</b>')
+    it('lists the route and the trains', () => {
+      expect(CalendarTrip.notes('Palo Alto', 'San Mateo', trains)).toBe(
+        'Palo Alto to San Mateo\n#523  5:43pm – 5:59pm\n#151  5:55pm – 6:17pm\n#425  6:10pm – 6:28pm')
     })
   })
 

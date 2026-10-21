@@ -52,14 +52,12 @@ export const CalendarTrip = {
     return `Caltrain to ${destination}`
   },
 
-  /** The event description: the route in bold, then the trains, the planned one in bold. */
-  html (origin: string, destination: string, trains: PlannedTrain[]): string {
-    // HTML collapses the two spaces after the train number; keep both
-    const lines = trains.map((train) => {
-      const line = CalendarTrip.line(train).replace('  ', '&nbsp; ')
-      return train.selected ? `<b>${line}</b>` : line
-    })
-    return [`<b>${origin} to ${destination}</b>`, ...lines].join('<br>')
+  /**
+   * The event description: the route, then the trains. The event's own times
+   * already say which one is planned, so the description doesn't mark it.
+   */
+  notes (origin: string, destination: string, trains: PlannedTrain[]): string {
+    return [`${origin} to ${destination}`, ...trains.map(CalendarTrip.line)].join('\n')
   },
 
   /**

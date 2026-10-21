@@ -3,10 +3,10 @@ import type { SVGIcon } from '@progress/kendo-svg-icons'
 import { stationLines } from '../lib/stationLines'
 
 // The apps' round toolbar buttons (back, swap, reset), as a KendoReact Button.
-export function IconButton ({ icon, label, onClick }: { icon: SVGIcon, label: string, onClick: () => void }) {
+export function IconButton ({ icon, label, onClick, className }: { icon: SVGIcon, label: string, onClick: () => void, className?: string }) {
   return (
     <Button
-      className="icon-button"
+      className={className ? `icon-button ${className}` : 'icon-button'}
       svgIcon={icon}
       rounded="full"
       fillMode="solid"
