@@ -39,9 +39,9 @@ jobs:
       - if: steps.switch.outputs.changed == 'true'
         uses: google-github-actions/auth@v2
         with:
-          # Woodie's shared GitHub pool (in next-caltrain-feed), and this
+          # Woodie's shared GitHub pool (in outgoing-netpress), and this
           # project's deploy-only account, which trusts only named repos.
-          workload_identity_provider: projects/1061341448976/locations/global/workloadIdentityPools/github/providers/github
+          workload_identity_provider: projects/755408181451/locations/global/workloadIdentityPools/github/providers/github
           service_account: github-deploy@next-caltrain-app.iam.gserviceaccount.com
       - if: steps.switch.outputs.changed == 'true'
         uses: google-github-actions/setup-gcloud@v2

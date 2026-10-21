@@ -81,17 +81,15 @@ change), serving the `default` service only: static files. No database,
 no other service, nothing running between deploys.
 
 - **Deploying:** GitHub Actions only (see "Conventions" below), through
-  Woodie's shared Workload Identity pool in project `next-caltrain-feed`
-  (that project exists only for the pool) and the deploy-only account
-  `github-deploy@next-caltrain-app.iam.gserviceaccount.com`, which trusts
-  this repo (and the archived next-caltrain-feed). The same pool deploys
-  netpress, johnwoodell and liamwoodell; see the cross-project notes.
+  Woodie's shared Workload Identity pool in project `outgoing-netpress`
+  (netpress's project, named "netpress site and keys") and the deploy-only
+  account `github-deploy@next-caltrain-app.iam.gserviceaccount.com`, which
+  trusts this repo. The same pool deploys netpress, johnwoodell and
+  liamwoodell; see the cross-project notes.
 - **APIs left on** after the 2026-10-21 cleanup, all needed: App Engine
   (+ reporting), Cloud Build, Artifact Registry, Storage (×3), Pub/Sub
   (Cloud Build depends on it), IAM, IAM Credentials, Logging, Monitoring,
   Trace, Telemetry, Service Usage, Service Management.
-  `next-caltrain-feed` keeps only what the pool needs (IAM, IAM
-  Credentials, STS) plus the basics.
 
 ## History, briefly
 
