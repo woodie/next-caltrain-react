@@ -1,7 +1,7 @@
 import { Button } from '@progress/kendo-react-buttons'
 import { DateInput, DatePicker } from '@progress/kendo-react-dateinputs'
 import { DropDownList } from '@progress/kendo-react-dropdowns'
-import { chevronLeftIcon } from '@progress/kendo-svg-icons'
+import { calendarIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { useState } from 'react'
 import { CalendarTrip, type PlanMode } from '../lib/CalendarTrip'
 import { tripDepart } from '../lib/CaltrainService'
@@ -50,7 +50,7 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
     <div className="screen calendar">
       <div className="toolbar">
         <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />
-        <span className="title centered">Add to Calendar</span>
+        <span className="title centered">Create Calendar Event</span>
         <span className="icon-placeholder" />
       </div>
       <div className="calendar-content">
@@ -73,7 +73,7 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
             </div>
           ))}
         </div>
-        <Button themeColor="primary" size="large" disabled={!planned} onClick={addToCalendar}>
+        <Button className="add-to-calendar" fillMode="outline" svgIcon={calendarIcon} disabled={!planned} onClick={addToCalendar}>
           Add to Google Calendar
         </Button>
       </div>

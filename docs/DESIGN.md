@@ -114,8 +114,14 @@ over line for line. `TripViewModel` is a plain class, as in the apps;
   `DropDownList` is free unless it's filterable or virtualized. Check
   Telerik's [free vs. premium list](https://www.telerik.com/kendo-react-ui/components/getting-started/free-vs-premium)
   before adding a component, and look for the console warning after.
-- **Theme:** `default-main-dark`, under the apps' own colors
-  (`src/styles.css`, from `AppStyle.swift`).
+- **Theme:** Kendo's `default-main` and `default-main-dark`, each loaded as
+  its own stylesheet with a `prefers-color-scheme` media query (they style
+  the same classes, so they can't both be imported), following the phone's
+  light or dark setting like the apps. They load before `src/styles.css`,
+  so the apps' own colors (from `AppStyle.swift`) win.
+- **One action button,** Add to Google Calendar, since the apps' other
+  buttons only navigate. It's Kendo's outline style in the apps' text color,
+  not a filled theme color.
 - **The trip list isn't a Grid.** KendoReact's Grid scrolls its rows, and
   the trip list must step instead, so it's a custom row layout.
 - **Styling Kendo to someone else's design:** the flat Button style sets

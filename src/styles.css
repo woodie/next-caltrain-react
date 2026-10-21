@@ -317,6 +317,16 @@ button {
 
 .planned-trains > div.selection-arriving { border-color: var(--cal-arrive); }
 
+/* The one action button in the apps: Kendo's outline style in the apps'
+   text color, rounded like the trip rows, instead of a filled theme color. */
+.k-button.add-to-calendar {
+  align-self: center;
+  padding: 8px 20px;
+  border-radius: 8px;
+  color: var(--app-text);
+  border-color: var(--cal-swapped);
+}
+
 /* Kendo's popups (the date and time pickers) can scroll, unlike the app. */
 .k-animation-container, .k-popup { touch-action: auto; }
 
