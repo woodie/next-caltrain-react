@@ -1,4 +1,4 @@
-import { arrowRotateCcwIcon, arrowsLeftRightIcon } from '@progress/kendo-svg-icons'
+import { arrowRotateCcwIcon, arrowsLeftRightIcon, calendarIcon } from '@progress/kendo-svg-icons'
 import { CaltrainService, tripDepart } from '../lib/CaltrainService'
 import { GoodTimes } from '../lib/GoodTimes'
 import { scheduleLabel } from '../lib/Schedule'
@@ -12,10 +12,11 @@ interface Props {
   act: (change: (vm: TripViewModel) => void) => void
   showTripList: () => void
   showStationSelection: () => void
+  showCalendar: () => void
   showAbout: () => void
 }
 
-export function HomeScreen ({ vm, act, showTripList, showStationSelection, showAbout }: Props) {
+export function HomeScreen ({ vm, act, showTripList, showStationSelection, showAbout, showCalendar }: Props) {
   const drag = useStepDrag(vm.offset, vm.trips.length, (offset) => act((vm) => vm.setOffset(offset)))
   const trip = vm.trips[drag.effectiveOffset] ?? null
   const noTrainsAtAll = vm.trips.length === 0
@@ -52,6 +53,7 @@ export function HomeScreen ({ vm, act, showTripList, showStationSelection, showA
         {vm.hasManualSelection && (
           <IconButton icon={arrowRotateCcwIcon} label="Back to the next train" onClick={() => act((vm) => vm.resetToNext())} />
         )}
+        <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
         <IconButton icon={arrowsLeftRightIcon} label="Swap stations" onClick={() => act((vm) => vm.swapStations())} />
       </div>
 

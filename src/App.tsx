@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Trip } from './lib/CaltrainService'
 import { fetchedToday, fetchFromNetwork, loadCached, type Schedule } from './lib/Schedule'
 import { AboutScreen } from './screens/AboutScreen'
+import { CalendarScreen } from './screens/CalendarScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { StationSelectionScreen } from './screens/StationSelectionScreen'
 import { TripDetailScreen } from './screens/TripDetailScreen'
@@ -14,6 +15,7 @@ type Screen =
   | { name: 'tripDetail', trip: Trip }
   | { name: 'stationSelection' }
   | { name: 'about' }
+  | { name: 'calendar' }
 
 export function App () {
   const [schedule, setSchedule] = useState<Schedule | null>(null)
@@ -65,6 +67,7 @@ function Navigator ({ schedule }: { schedule: Schedule }) {
           showTripList={() => push({ name: 'tripList' })}
           showStationSelection={() => push({ name: 'stationSelection' })}
           showAbout={() => push({ name: 'about' })}
+          showCalendar={() => push({ name: 'calendar' })}
         />
       )
     case 'tripList':
@@ -75,6 +78,7 @@ function Navigator ({ schedule }: { schedule: Schedule }) {
           back={back}
           showTrip={(trip) => push({ name: 'tripDetail', trip })}
           showStationSelection={() => push({ name: 'stationSelection' })}
+          showCalendar={() => push({ name: 'calendar' })}
         />
       )
     case 'tripDetail':
@@ -93,5 +97,7 @@ function Navigator ({ schedule }: { schedule: Schedule }) {
       return <StationSelectionScreen vm={vm} act={act} back={back} />
     case 'about':
       return <AboutScreen scheduleDate={schedule.scheduleDate} back={back} />
+    case 'calendar':
+      return <CalendarScreen vm={vm} back={back} showStationSelection={() => push({ name: 'stationSelection' })} />
   }
 }

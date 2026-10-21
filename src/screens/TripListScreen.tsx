@@ -1,4 +1,4 @@
-import { arrowRotateCcwIcon, arrowsLeftRightIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
+import { arrowRotateCcwIcon, arrowsLeftRightIcon, calendarIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { CaltrainService, type Trip, tripDepart } from '../lib/CaltrainService'
 import { GoodTimes } from '../lib/GoodTimes'
@@ -14,9 +14,10 @@ interface Props {
   back: () => void
   showTrip: (trip: Trip) => void
   showStationSelection: () => void
+  showCalendar: () => void
 }
 
-export function TripListScreen ({ vm, act, back, showTrip, showStationSelection }: Props) {
+export function TripListScreen ({ vm, act, back, showTrip, showStationSelection, showCalendar }: Props) {
   const drag = useStepDrag(vm.offset, vm.trips.length, (offset) => act((vm) => vm.setOffset(offset)))
   const listRef = useRef<HTMLDivElement>(null)
   const [rowCount, setRowCount] = useState(1)
@@ -71,7 +72,8 @@ export function TripListScreen ({ vm, act, back, showTrip, showStationSelection 
         <span className="spacer" />
         <StationNames origin={vm.origin} destination={vm.destination} onTap={showStationSelection} />
         <span className="spacer" />
-        <span className="icon-placeholder" />
+        {/* Mirrors the back button across the station names. */}
+        <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
       </div>
       <button
         type="button"

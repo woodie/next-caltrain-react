@@ -51,7 +51,7 @@ cache is `localStorage`.
 | Trip list: a row | Tap | Opens that train's stops |
 | Trip list: the rows | Vertical drag | Steps the selected trip |
 | Station selection | Tap a station | Picks it |
-| Header buttons | Tap | Swap direction; reset a manual selection |
+| Header buttons | Tap | Swap direction; reset a manual selection; plan a trip for the calendar |
 
 **Stepping, not scrolling.** The trip list doesn't scroll. It draws as many
 fixed rows as fit and, as you drag, moves the selection by one row for every
@@ -68,6 +68,29 @@ letting go of a drag doesn't also open a train.
 back gesture and the browser's back button work like the apps' navigation
 stacks.
 
+## Adding a trip to the calendar
+
+The calendar button on the home screen and the trip list opens a planner
+modeled on Google Maps: **Leave at** or **Arrive by**, a time and a date.
+It shows the planned train with the trains before and after it (the
+planned one boxed, like the trip list's selection) and refreshes as the
+inputs change. **Add to Google Calendar** opens a prefilled event: the
+planned train's exact times on Pacific time, titled "Caltrain to
+{destination}", with the three trains in the description and the planned
+one in bold. It's a plain link, so no sign-in or API is involved.
+
+- **The date picks the schedule:** weekday, weekend, or holiday from the
+  feed's `specialDates`.
+- **It opens on the selected train,** on the next date whose schedule
+  matches the one on screen (so viewing Weekend on a Tuesday plans a
+  Saturday).
+- **Times before 2:00 AM count as that night,** the end of the schedule
+  day, so 12:05 AM finds the 12:05 AM train.
+
+The logic (`src/lib/CalendarTrip.ts`) is ported from next-caltrain-pwa's
+`CalendarTrip.js` (its issue #39), and its spec keeps the PWA's
+describe/context/it text.
+
 ## The logic: ported from Swift
 
 next-caltrain-swift is the baseline. `src/lib` is a straight TypeScript port
@@ -79,8 +102,17 @@ over line for line. `TripViewModel` is a plain class, as in the apps;
 ## KendoReact
 
 - **Components:** `Button` with KendoReact's SVG icons for the round toolbar
-  buttons, and `Dialog` for saving default stations. All are in KendoReact's
-  free tier: no license key, and no license warnings in the console.
+  buttons, `Dialog` for saving default stations, and, on the calendar
+  screen, `DropDownList` (Leave at / Arrive by), `DateInput` (the time),
+  `DatePicker` and a primary `Button`.
+- **Free tier only, so no license key:** every component above is free.
+  Some aren't, and Kendo checks per component: without a key, a paid one
+  puts a "License key missing" banner and an "Invalid license" watermark
+  over the whole app. `TimePicker` is paid ("TimePicker: all", says the
+  console), which is why the time is a `DateInput` with spinners.
+  `DropDownList` is free unless it's filterable or virtualized. Check
+  Telerik's [free vs. premium list](https://www.telerik.com/kendo-react-ui/components/getting-started/free-vs-premium)
+  before adding a component, and look for the console warning after.
 - **Theme:** `default-main-dark`, under the apps' own colors
   (`src/styles.css`, from `AppStyle.swift`).
 - **The trip list isn't a Grid.** KendoReact's Grid scrolls its rows, and

@@ -276,6 +276,44 @@ button {
   color: var(--cal-arrive);
 }
 
+/* Calendar: plan a trip, then add it to Google Calendar. */
+.screen.calendar { background: var(--app-background); }
+
+.calendar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 16px;
+  font-size: var(--font-train);
+}
+
+.calendar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.calendar-row > * { flex: 1; }
+
+.schedule-label { color: var(--cal-past); }
+
+.planned-trains {
+  min-height: 90px;
+  line-height: 28px;
+  white-space: pre;
+}
+
+.planned-trains > div {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 0 8px;
+}
+
+.planned-trains > div.selection-arriving { border-color: var(--cal-arrive); }
+
+/* Kendo's popups (the date and time pickers) can scroll, unlike the app. */
+.k-animation-container, .k-popup { touch-action: auto; }
+
 /* About */
 .about-content {
   flex: 1;
