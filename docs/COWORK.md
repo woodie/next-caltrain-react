@@ -9,7 +9,7 @@ A cloud rebuild of the Next Caltrain schedule pipeline, plus a web clone of
 the iOS and Android apps:
 
 - **Backend:** FastAPI on App Engine standard (Python 3.13), with SQLAlchemy
-  over Datastore. It builds `schedule.json` from Caltrain's GTFS on demand
+  over PostgreSQL on Cloud SQL, for now. It builds `schedule.json` from Caltrain's GTFS on demand
   and caches it until 3:00 AM Pacific the next morning.
 - **Web client:** React + TypeScript with KendoReact, reading the same feed
   the apps read.
@@ -53,9 +53,20 @@ Then the decision to build this as a separate project, rather than recreate
 the current Caltrain app, and these choices from Woodie:
 
 - Repo `next-caltrain-react`, App Engine project `next-caltrain-app`.
-- Start on free Datastore through the SQLAlchemy dialect; `datastore-native`
-  and `postgres` branches come later. Bail out of the dialect if it fights
-  us; the data model is simple.
+- At first: free Datastore through the SQLAlchemy dialect. After the
+  dialect turned out to fake its transactions, Woodie switched to **the
+  cheapest Cloud SQL Postgres** (2026-10-21) and dropped the dialect. He
+  doesn't want to pay for a database he doesn't need, so Postgres is
+  **temporary, for a few months**: always plan to bail out to Datastore
+  (native `google-cloud-datastore`, not the dialect) later. Keep the data
+  model and queries easy to move: the version-then-switch pattern, no
+  reliance on joins.
+- **The 3:00 AM Pacific expiry** is fine because the last train out of San
+  Francisco always leaves just after midnight.
+- **Mamba** for Python tests (Woodie's pick).
+- **Clone all the apps' touch behavior,** including the fixed-cell
+  "stepping, not scrolling" trip list (see "Web client" in
+  `docs/DESIGN.md`).
 - **Transaction-based, not scheduled:** a request after the cache expires
   does the work and waits for it. Serving a stale feed with a "refresh in a
   minute" flag was considered and rejected (reasons in `docs/DESIGN.md`).
@@ -81,23 +92,61 @@ API, which we don't use; the `google-cloud-datastore` client and the
 SQLAlchemy dialect are unaffected. App Engine serves at
 `next-caltrain-app.appspot.com` (also `next-caltrain-app.wl.r.appspot.com`).
 
+Cloud SQL setup, done 2026-10-21 (Woodie approved the instance as
+specified, about $9–11 a month):
+
+```bash
+gcloud services enable sqladmin.googleapis.com --project=next-caltrain-app
+gcloud sql instances create next-caltrain-db --project=next-caltrain-app --database-version=POSTGRES_17 --edition=ENTERPRISE --tier=db-f1-micro --region=us-west2 --availability-type=zonal --storage-type=HDD --storage-size=10 --no-storage-auto-increase --no-backup --database-flags=cloudsql.iam_authentication=on
+gcloud sql databases create caltrain --instance=next-caltrain-db --project=next-caltrain-app
+gcloud sql users create next-caltrain-app@appspot --instance=next-caltrain-db --project=next-caltrain-app --type=cloud_iam_service_account --database-roles=cloudsqlsuperuser
+gcloud sql users create mando.woodie@gmail.com --instance=next-caltrain-db --project=next-caltrain-app --type=cloud_iam_user --database-roles=cloudsqlsuperuser
+gcloud projects add-iam-policy-binding next-caltrain-app --member=serviceAccount:next-caltrain-app@appspot.gserviceaccount.com --role=roles/cloudsql.client
+gcloud projects add-iam-policy-binding next-caltrain-app --member=serviceAccount:next-caltrain-app@appspot.gserviceaccount.com --role=roles/cloudsql.instanceUser
+```
+
+- The connection name is `next-caltrain-app:us-west2:next-caltrain-db`
+  (zone `us-west2-c`). It has a public IP with no authorized networks, so
+  the only way in is the Cloud SQL Python Connector (or Auth Proxy) with
+  IAM.
+- **No passwords anywhere.** The built-in `postgres` user has no password
+  set; IAM users get their database roles from `--database-roles` instead.
+- **The service account's database username drops the
+  `.gserviceaccount.com` suffix:** `next-caltrain-app@appspot`, not the full
+  email and not `@appspot.iam` (both rejected). Woodie's account,
+  `mando.woodie@gmail.com`, is the active gcloud account on his Mac.
+- `cloudsqlsuperuser` is broader than the app needs. Fine for a temporary
+  learning database; narrow it if this ever matters.
+
 ## Things checked so far
 
 Verified before writing the design, so they don't need re-checking:
 
 - **The python-datastore-sqlalchemy dialect** (v0.0.4, MIT, one
-  maintainer, last pushed 2026-10-07) supports SELECT, INSERT, UPDATE and DELETE through the ORM.
-  But `Connection.begin()`/`commit()`/`rollback()` in
-  `sqlalchemy_datastore/datastore_dbapi.py` only log, there are no joins,
-  and each inserted row is its own `put()`. The design's "write everything
-  under a version, then switch one `Current` entity" pattern exists because
-  of this.
+  maintainer, last pushed 2026-10-07) supports SELECT, INSERT, UPDATE and
+  DELETE through the ORM. But `Connection.begin()`/`commit()`/`rollback()`
+  in `sqlalchemy_datastore/datastore_dbapi.py` only log, there are no
+  joins, and each inserted row is its own `put()`. That's why it was
+  dropped.
+- **Mamba 0.11.3** (last release 2023-11-09, classifiers stop at Python 3.9)
+  runs fine on Python 3.13.16 with `expects`: nested documentation output,
+  `before.each`, readable failures, no deprecation warnings on import.
+  Tested in a throwaway venv.
 - **Bundled Memcache** is set up with `wrap_wsgi_app`, and Google's docs only
   show WSGI frameworks. FastAPI is ASGI, so the plan is an `a2wsgi` bridge.
   Unproven: the first spike.
 - **Memorystore** needs a Serverless VPC Access connector from App Engine
   standard (documented for Valkey and Redis; not confirmed for Memcached).
-  Not free, so it waits for the `postgres` branch.
+  Not free, and not worth it for one small JSON document.
+- **Cloud SQL's cheapest option** is `db-f1-micro`, about $8–10 a month
+  plus storage; shared-core sizes only exist in the Enterprise edition,
+  with no SLA. A free-tier `e2-micro` VM running Postgres would cost $0,
+  but only in `us-west1`, `us-central1` or `us-east1`, and skips Cloud SQL.
+- **Touch behavior** in the apps: the gesture table in `docs/DESIGN.md`
+  comes from the `onTapGesture`/`DragGesture` handlers in next-caltrain-swift
+  (`HomeView.swift`, `TripListView.swift`, `StationSelectionView.swift`,
+  `StationPickerView.swift`); next-caltrain-kotlin mirrors them with
+  `detectTapGestures`/`detectDragGestures`.
 - **`SQLALCHEMY_ENGINE_OPTIONS`** is Flask-SQLAlchemy's setting. With FastAPI,
   the Cloud SQL Python Connector goes in as
   `create_engine("postgresql+pg8000://", creator=getconn)`.
@@ -105,7 +154,8 @@ Verified before writing the design, so they don't need re-checking:
   with `Codable`, and next-caltrain-kotlin reads named keys from an
   `org.json` `JSONObject`.
 - **GTFS size:** about 5,900 rows per feed version (5,469 stop times, 261
-  trips, 107 stops), under Datastore's free 20,000 writes a day.
+  trips, 107 stops). For the later Datastore move, that's under Datastore's
+  free 20,000 writes a day.
 
 ## Conventions here
 
@@ -115,29 +165,39 @@ Verified before writing the design, so they don't need re-checking:
   touch next-caltrain-pwa's deploy.
 - **Branches and PRs** for implementation, straight to `main` for docs, as in
   the cross-project notes.
-- **Python 3.13** to match App Engine's `python313` runtime. As of this
-  writing, mise only has 3.12 installed, so `mise install python@3.13` comes
-  first.
-- **Tests** read like RSpec output: Vitest's tree reporter for the client, as
-  in next-caltrain-pwa. For Python, picking a pytest setup that nests
-  describe/context/it (and prints it) is an open choice.
+- **Python 3.13** to match App Engine's `python313` runtime (3.13.16,
+  installed with mise).
+- **Tests** read like RSpec output: Mamba with `expects` for Python,
+  Vitest's tree reporter for the client, as in next-caltrain-pwa.
+- **Spec text matches the apps.** Woodie put real effort into making
+  next-caltrain-swift's and next-caltrain-kotlin's test output identical
+  unless a difference reflects a real implementation difference (checked
+  2026-10-21: all five spec pairs have the same tree; only method-name
+  `describe`s like `.direction(from:to:stops:)` versus `.direction()`, and
+  constant names like `.weekday` versus `WEEKDAY`, differ). The web
+  client's ports of those five specs must keep the same describe/context/it
+  text, in the same order. Bonus points for the same output format too.
+  When porting, extract the names from both apps (`grep -oE
+  '(describe|context|it)\("[^"]*"'`) and diff against the TypeScript
+  version.
 - **Makefile targets** (`lint`, `test`, `check`) once there's code to run.
-- **The Datastore emulator** (`cloud-datastore-emulator`, already installed
-  in the gcloud SDK) for local runs and tests, not the real database.
+- **Postgres in Docker** for tests and local runs, never Cloud SQL.
 
 ## Current status
 
 The repo has the README, LICENSE and `docs/DESIGN.md`, and no code yet.
-The cloud project, App Engine app and Datastore database exist; nothing is
+The cloud project, App Engine app, Cloud SQL instance (with its database
+and IAM users) and the unused Datastore database exist; nothing is
 deployed.
 
 ## Next steps
 
-1. Spike the two risks, on a branch: a minimal FastAPI app on App Engine
-   that reads and writes bundled Memcache through `a2wsgi`, and does a
-   SQLAlchemy round trip to Datastore through the dialect (emulator first,
-   then the real database).
-2. The data model and GTFS loader, with tests against the emulator.
+1. Spike the risks, on a branch: a minimal FastAPI app on App Engine that
+   reads and writes bundled Memcache through `a2wsgi`, and does a
+   SQLAlchemy round trip to Cloud SQL through the Cloud SQL Python
+   Connector with IAM authentication.
+2. The data model and GTFS loader, with Mamba specs against Postgres in
+   Docker.
 3. The feed endpoint, with the expiry and lock behavior from
    `docs/DESIGN.md`, plus the CSV endpoints.
 4. Diff the generated feed against next-caltrain-pwa's.

@@ -4,9 +4,9 @@ A cloud version of the Next Caltrain schedule pipeline, plus a web clone of
 the iOS and Android apps.
 
 - **Backend:** FastAPI on App Engine (standard, Python), with SQLAlchemy over
-  Google Cloud Datastore. It turns Caltrain's GTFS feed into the same
-  `schedule.json` the apps read, on demand, and caches it until the next
-  morning.
+  PostgreSQL on Cloud SQL, for now; a move to the free Datastore is planned.
+  It turns Caltrain's GTFS feed into the same `schedule.json` the apps read,
+  on demand, and caches it until the next morning.
 - **Web client:** React + TypeScript with KendoReact, mirroring the
   Swift/Kotlin apps and their tests. It only depends on the feed, so the
   backend underneath can be swapped.
