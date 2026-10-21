@@ -12,6 +12,8 @@
   --font-origin: 22px;
   --font-blurb: 28px;
   --row-height: 44px;
+  --alert-background: #f2f2f2;
+  --alert-line: #c6c6c8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,6 +25,8 @@
     --icon-circle: #262626;
     --app-background: #000;
     --app-text: #fff;
+    --alert-background: #2c2c2e;
+    --alert-line: #48484a;
   }
 }
 
@@ -332,6 +336,69 @@ button {
 
 /* Kendo's popups (the date and time pickers) can scroll, unlike the app. */
 .k-animation-container, .k-popup { touch-action: auto; }
+
+/* A confirmation shaped like an iOS alert, not Kendo's full-width dialog. */
+.alert .k-dialog {
+  width: 270px;
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  text-align: center;
+  color: var(--app-text);
+  background: var(--alert-background);
+}
+
+.alert .k-dialog .k-window-titlebar {
+  justify-content: center;
+  padding: 20px 16px 4px;
+  border: none;
+  background: none;
+}
+
+.alert .k-dialog .k-window-title {
+  flex: none;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.alert .k-dialog .k-window-content {
+  padding: 0 16px 20px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.alert .k-dialog .k-window-content p { margin: 0; }
+
+.alert .k-dialog .k-actions {
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  border-top: 1px solid var(--alert-line);
+  position: relative;
+}
+
+.alert .k-dialog .k-actions .k-button {
+  flex: 1;
+  height: 44px;
+  border-radius: 0;
+  font-size: 17px;
+  color: var(--cal-past);
+  outline: none;
+}
+
+.alert .k-dialog .k-actions .k-button::before,
+.alert .k-dialog .k-actions .k-button::after { opacity: 0; }
+
+.alert .k-dialog .k-actions::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  border-left: 1px solid var(--alert-line);
+}
+
+.alert .k-dialog .k-actions .k-button.cancel { font-weight: 600; }
 
 /* About */
 .about-content {
