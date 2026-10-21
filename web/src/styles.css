@@ -1,0 +1,292 @@
+/* Colors named after the apps' AppStyle.swift, which kept the legacy CSS names. */
+:root {
+  color-scheme: light dark;
+  --cal-past: #00f;
+  --cal-arrive: #009e66;
+  --cal-depart: #cc9e12;
+  --cal-swapped: #8c8c8c;
+  --icon-circle: #e0e0e0;
+  --app-background: #fff;
+  --app-text: #000;
+  --font-train: 18px;
+  --font-origin: 22px;
+  --font-blurb: 28px;
+  --row-height: 44px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cal-past: #338cff;
+    --cal-arrive: #0f0;
+    --cal-depart: #ff0;
+    --cal-swapped: #666;
+    --icon-circle: #262626;
+    --app-background: #000;
+    --app-text: #fff;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--app-background);
+  color: var(--app-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Drags step the selection; keep the browser from scrolling or zooming instead. */
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* One phone-sized column, with the apps' gray-to-black gradient at the top. */
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 440px;
+  margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
+  overflow: hidden;
+  background: linear-gradient(#808080, var(--app-background) 200px) no-repeat;
+}
+
+.screen.trip-detail, .screen.station-selection, .screen.about {
+  background: var(--app-background);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 0;
+  min-height: 52px;
+}
+
+.toolbar .title {
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.toolbar .title.centered {
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spacer { flex: 1; }
+
+.icon-placeholder { width: 44px; height: 44px; flex: none; }
+
+/* Kendo's solid style, recolored to the apps' filled circle. */
+.k-button.k-button-solid.icon-button {
+  border-color: transparent;
+  background-image: none;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  color: var(--app-text);
+  background: var(--icon-circle);
+}
+
+.station-names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--font-origin);
+  line-height: 1.2;
+}
+
+/* Home: the countdown circle, centered on the whole screen. */
+.home .circle {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 230px;
+  height: 230px;
+  border: 5px solid;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.4s;
+  cursor: pointer;
+}
+
+.circle-content {
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.blurb {
+  font-size: var(--font-blurb);
+  white-space: nowrap;
+  transition: opacity 0.5s;
+}
+
+.hero-time {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.train, .meridiem { font-size: var(--font-train); }
+
+.hero-time .time, .row-time { font-size: var(--font-blurb); }
+
+/* Trip list: fixed rows that step instead of scrolling. */
+.status {
+  height: var(--row-height);
+  font-size: var(--font-blurb);
+  white-space: nowrap;
+  transition: opacity 0.5s;
+}
+
+.rows {
+  flex: 1;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.trip-row {
+  display: grid;
+  grid-template-columns: 58px 1fr 1fr;
+  align-items: baseline;
+  width: calc(100% - 24px);
+  height: calc(var(--row-height) - 4px);
+  margin: 2px 12px;
+  padding: 0 12px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.trip-row .train { text-align: left; }
+
+/* Trip detail: times, a track with dots, and station names. */
+.stops {
+  flex: 1;
+  overflow-y: auto;
+  touch-action: pan-y;
+  padding: 8px 0 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stop {
+  display: grid;
+  grid-template-columns: 80px 14px 1fr;
+  column-gap: 12px;
+  min-height: 34px;
+  font-size: var(--font-train);
+  width: 330px;
+}
+
+.stop-time { text-align: right; }
+
+.track { position: relative; }
+
+.track .dot {
+  position: absolute;
+  top: 6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--cal-arrive);
+}
+
+.track .line {
+  position: absolute;
+  top: 13px;
+  bottom: -8px;
+  left: 6px;
+  width: 2px;
+  background: var(--cal-arrive);
+}
+
+.stop.past .dot, .stop.past .line { background: var(--cal-past); }
+
+.stop.origin .dot, .stop.destination .dot, .stop.transfer .dot { background: var(--app-text); }
+
+/* Station selection: two lists, morning and evening. */
+.station-selection hr {
+  width: 100%;
+  margin: 4px 0;
+  border: 0;
+  border-top: 1px solid gray;
+}
+
+.station-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.station-list h2 {
+  margin: 8px 0 4px;
+  text-align: center;
+  font-size: var(--font-origin);
+  font-weight: normal;
+  color: var(--cal-arrive);
+}
+
+.stations {
+  flex: 1;
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+.station {
+  display: block;
+  width: 100%;
+  padding: 7px 16px 7px 0;
+  font-size: var(--font-origin);
+  text-align: left;
+  border-top: 1px solid color-mix(in srgb, var(--cal-swapped) 40%, transparent);
+}
+
+.station .check {
+  display: inline-block;
+  width: 35%;
+  padding-right: 12px;
+  text-align: right;
+  color: var(--cal-arrive);
+}
+
+/* About */
+.about-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: var(--font-origin);
+  text-align: center;
+  padding-bottom: 20%;
+}
+
+.about-content .spaced { margin-top: 8px; }
