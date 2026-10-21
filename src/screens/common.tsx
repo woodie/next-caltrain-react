@@ -21,7 +21,7 @@ export function IconButton ({ icon, label, onClick }: { icon: SVGIcon, label: st
 export function StationNames ({ origin, destination, onTap }: { origin: string, destination: string, onTap: () => void }) {
   const [line1, line2] = stationLines(origin, destination)
   return (
-    <button type="button" className="station-names" onClick={onTap}>
+    <button type="button" className="station-names" onClick={(e) => { e.stopPropagation(); onTap() }}>
       <span>{line1}</span>
       <span>{line2}</span>
     </button>
