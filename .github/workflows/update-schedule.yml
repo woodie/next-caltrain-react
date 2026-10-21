@@ -1,12 +1,11 @@
 # Checks Caltrain's GTFS for a new timetable: every Monday, and whenever the
 # "Update schedule" button is pressed (Actions tab, or the GitHub app).
 #
-# - No new timetable: nothing happens.
-# - A new timetable, no go-live date: opens (or updates) an issue asking
-#   when it should go live, with GTFS's start date and Caltrain's.
-# - A new timetable and a go-live date: opens a pull request adding
-#   public/feed/schedule-<go-live>.json, closing that issue. The daily switch
-#   workflow makes it live on its go-live date.
+# A new timetable becomes a pull request adding public/feed/gtfs-<version>.json
+# and its line in public/feed/go-live.json, with a proposed go-live date
+# (tomorrow, unless one is given). Change the date to the real one in the
+# pull request before merging. The daily switch workflow makes the timetable
+# live on that date. No new timetable: nothing happens.
 name: Update schedule
 
 on:
@@ -15,15 +14,12 @@ on:
   workflow_dispatch:
     inputs:
       go_live:
-        description: "Go-live date (YYYY-MM-DD). Blank: just check, and ask if there's a new timetable."
+        description: "Proposed go-live date (YYYY-MM-DD). Blank: tomorrow. Can be changed in the pull request."
         required: false
       force:
-        description: "Write the file even if the GTFS hasn't changed"
+        description: "Make the pull request even if the GTFS hasn't changed"
         type: boolean
         default: false
-
-env:
-  QUESTION_TITLE: "New Caltrain timetable: when should it go live?"
 
 jobs:
   update:
@@ -31,7 +27,6 @@ jobs:
     permissions:
       contents: write # to push the pull request's branch
       pull-requests: write # to open it
-      issues: write # to ask for the go-live date
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,36 +39,19 @@ jobs:
           GO_LIVE: ${{ inputs.go_live }}
           FORCE: ${{ inputs.force && '--force' || '' }}
         run: npm run -s schedule:update -- --go-live "$GO_LIVE" $FORCE
-
-      # A new timetable without a go-live date: ask, in one open issue.
-      - if: steps.update.outputs.status == 'needs-date'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          QUESTION: ${{ steps.update.outputs.question }}
-        run: |
-          issue=$(gh issue list --state open --search "in:title \"$QUESTION_TITLE\"" --json number --jq '.[0].number')
-          if [ -n "$issue" ]; then
-            gh issue edit "$issue" --body-file "$QUESTION"
-          else
-            gh issue create --title "$QUESTION_TITLE" --body-file "$QUESTION"
-          fi
-
-      # A go-live date given: the pull request, which answers the issue.
       - if: steps.update.outputs.status == 'written'
         env:
           GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.update.outputs.branch }}
           GO_LIVE: ${{ steps.update.outputs.go_live }}
           FEED_VERSION: ${{ steps.update.outputs.feed_version }}
           SUMMARY: ${{ steps.update.outputs.summary }}
         run: |
-          issue=$(gh issue list --state open --search "in:title \"$QUESTION_TITLE\"" --json number --jq '.[0].number')
-          if [ -n "$issue" ]; then printf '\nCloses #%s.\n' "$issue" >> "$SUMMARY"; fi
-          branch="schedule/$GO_LIVE"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$branch"
+          git switch -c "$BRANCH"
           git add public/feed
-          git commit -m "Schedule from GTFS $FEED_VERSION, going live $GO_LIVE"
-          git push --force -u origin "$branch"
-          gh pr create --title "Schedule going live $GO_LIVE" --body-file "$SUMMARY" ||
-            gh pr edit "$branch" --body-file "$SUMMARY"
+          git commit -m "New timetable from GTFS $FEED_VERSION (proposed go-live $GO_LIVE)"
+          git push --force -u origin "$BRANCH"
+          gh pr create --title "New Caltrain timetable (GTFS $FEED_VERSION)" --body-file "$SUMMARY" ||
+            gh pr edit "$BRANCH" --body-file "$SUMMARY"

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { buildSchedule, feedVersionMs } from '../scripts/schedule/build.ts'
 import { changes, check, formatSchedule } from '../scripts/schedule/check.ts'
 import { effectiveDate } from '../scripts/schedule/caltrain.ts'
-import { liveOn, pacificToday } from '../scripts/schedule/files.ts'
+import { liveOn, pacificToday, pacificTomorrow, timetableName } from '../scripts/schedule/files.ts'
 import { parseCsv } from '../scripts/schedule/gtfs.ts'
 
 const context = describe
@@ -147,16 +147,34 @@ describe('Schedule pipeline', () => {
     })
   })
 
-  describe('.liveOn()', () => {
-    const dates = ['2026-01-31', '2026-10-20', '2027-01-30']
+  describe('.timetableName()', () => {
+    it('names the file for its GTFS build', () => {
+      expect(timetableName(Date.UTC(2026, 5, 10, 22, 25))).toBe('gtfs-20260610-2225.json')
+    })
+  })
 
-    it('is the newest schedule whose go-live date has arrived', () => {
-      expect(liveOn('2026-12-01', dates)).toBe('2026-10-20')
-      expect(liveOn('2027-01-30', dates)).toBe('2027-01-30')
+  describe('.liveOn()', () => {
+    const dates = {
+      'gtfs-20260610-2225.json': '2026-01-31',
+      'gtfs-20270112-1840.json': '2027-01-30',
+      'gtfs-20270301-0900.json': '2027-03-07',
+    }
+
+    it('is the timetable with the latest go-live date that has arrived', () => {
+      expect(liveOn('2026-12-01', dates)).toBe('gtfs-20260610-2225.json')
+      expect(liveOn('2027-01-30', dates)).toBe('gtfs-20270112-1840.json')
     })
 
-    it('is null before any schedule goes live', () => {
+    it('is null before any timetable goes live', () => {
       expect(liveOn('2025-12-31', dates)).toBeNull()
+    })
+
+    context('when a date was edited to go live before an older timetable', () => {
+      const edited = { ...dates, 'gtfs-20270301-0900.json': '2027-01-15' }
+
+      it('follows the dates, not the file names', () => {
+        expect(liveOn('2027-01-20', edited)).toBe('gtfs-20270301-0900.json')
+      })
     })
   })
 
@@ -182,6 +200,12 @@ describe('Schedule pipeline', () => {
   describe('.pacificToday()', () => {
     it('uses Pacific time, not UTC', () => {
       expect(pacificToday(new Date('2026-10-21T05:00:00Z'))).toBe('2026-10-20')
+    })
+  })
+
+  describe('.pacificTomorrow()', () => {
+    it("is the day after Pacific time's today", () => {
+      expect(pacificTomorrow(new Date('2026-10-21T05:00:00Z'))).toBe('2026-10-21')
     })
   })
 })

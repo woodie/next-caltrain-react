@@ -213,9 +213,15 @@ Verified before writing the design, so they don't need re-checking:
 Woodie's call: SQLAlchemy wasn't going to teach anything worth $10 a month,
 and Caltrain changes its timetable about once a year. So the feed is a
 static file built by GitHub Actions in this repo (see "Schedule updates" in
-`docs/DESIGN.md`): an **Update schedule** button that opens a PR with
-`public/feed/schedule-<go-live>.json`, and a daily **Switch schedule** that
+`docs/DESIGN.md`): an **Update schedule** workflow (button, plus every Monday) that opens a
+PR with each new timetable, and a daily **Switch schedule** that
 copies the live one to `public/feed/schedule.json` and deploys.
+Timetables are `public/feed/gtfs-<version>.json`, and their go-live dates
+live in `public/feed/go-live.json`. Woodie's design: a new timetable's PR
+proposes **tomorrow**, and a person edits that one line to the real date
+before merging (no separate question issue; an earlier version asked in an
+issue, and that was dropped). Line edits beat renaming files, especially
+from the GitHub app.
 
 - **The TypeScript port is exact:** run against the same GTFS, it matches
   next-caltrain-pwa's output for stations, weekday and weekend, and its

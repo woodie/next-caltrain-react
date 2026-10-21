@@ -29,11 +29,17 @@ Caltrain changes its timetable about once a year.
 ## Schedule updates
 
 Two GitHub Actions workflows keep the feed current, with no laptop and no
-cloud server involved.
+cloud server involved. Every timetable is kept in `public/feed/`:
+
+| File | What it is |
+|---|---|
+| `gtfs-<version>.json` | One timetable, named for the GTFS build it came from (`gtfs-20260610-2225.json` for `feed_version` "UTC: 10-Jun-2026 22:25"); never renamed |
+| `go-live.json` | When each timetable goes live, one line each: `"gtfs-20260610-2225.json": "2026-01-31"` |
+| `schedule.json` | A copy of the timetable live today: the file the apps read |
 
 **Update schedule** (`.github/workflows/update-schedule.yml`) runs every
 Monday, and whenever it's started by hand from the Actions tab or the GitHub
-app, optionally with a go-live date:
+app:
 
 1. Downloads Caltrain's GTFS and builds `schedule.json` from it in
    TypeScript (`scripts/schedule/build.ts`, ported from next-caltrain-pwa's
@@ -42,50 +48,46 @@ app, optionally with a go-live date:
 2. Checks it: errors (an empty table, a train with the wrong number of
    stops, an impossible time) stop the run; warnings (a train reaching a
    station before the one it left, i.e. bad GTFS data) are reported.
-3. If the GTFS `feed_version` is the same as the newest schedule file's,
-   stops: no new timetable. That's the usual Monday.
-4. **A new timetable and no go-live date: asks.** It writes nothing, and
-   opens a GitHub issue, "New Caltrain timetable: when should it go live?",
-   with GTFS's start date (`feed_start_date`), the "Effective" date from
-   [Caltrain's schedules page](https://www.caltrain.com/schedules/pdfs),
-   what changed and the checks. A later run updates the same issue.
-5. **A new timetable and a go-live date** (you answering the issue by
-   running the workflow with the date): writes
-   `public/feed/schedule-<go-live>.json` and opens a pull request listing
-   what changed (trains added, removed and retimed; special dates) and any
-   warnings, which closes the issue.
+3. If `gtfs-<version>.json` already exists: no new timetable, nothing to do.
+   That's the usual Monday.
+4. Otherwise writes it, adds its line to `go-live.json` with a **proposed
+   go-live date of tomorrow** (or the date it was started with), and opens a
+   pull request. The description shows GTFS's start date
+   (`feed_start_date`) and the "Effective" date from
+   [Caltrain's schedules page](https://www.caltrain.com/schedules/pdfs)
+   next to the proposed one, links straight to editing `go-live.json` on
+   the pull request's branch, and lists what changed (trains added, removed
+   and retimed; special dates) and any warnings.
 
-The go-live date is always a person's decision: GTFS and Caltrain's page
-only suggest it. (Caltrain's last change took effect January 31, 2026, and
-both agreed; the next is expected around January 2027.)
+**Before merging, a person sets the real go-live date** by editing that one
+line. The date is always a person's decision; GTFS and Caltrain's page only
+suggest it. (Caltrain's last change took effect January 31, 2026, and both
+agreed; the next is expected around January 2027.) Merging only adds the
+files.
 
 **Switch schedule** (`.github/workflows/switch-schedule.yml`), daily at
-3:30 AM PDT (2:30 AM PST), after the schedule day starts: copies the newest
-dated file whose go-live date has arrived to `public/feed/schedule.json`,
-the name the apps read, then commits and deploys. On most days nothing
+3:30 AM PDT (2:30 AM PST), after the schedule day starts: copies the
+timetable with the latest go-live date that has arrived to
+`public/feed/schedule.json`, then commits and deploys. On most days nothing
 changes. It can also be run by hand.
-
-So every timetable stays in the repo under its go-live date, and the live
-one is also under the short name. Merging an update's pull request only
-adds the dated file; the switch makes it live.
 
 - **Holidays come from GTFS alone,** as do the special dates (from
   `calendar_dates.txt`: weekend service on a weekday is `1`, the modified
   schedule is `2`). Where GTFS disagrees with Caltrain's published PDF
   (see next-caltrain-pwa's `docs/HOLIDAY.md`), this feed shows GTFS's
   version, e.g. MLK Day 2027 as January 27 rather than 18.
-- **The files are formatted one train per line,** so a pull request shows
+- **Timetables are formatted one train per line,** so a pull request shows
   exactly which trains changed.
 - **GitHub turns off scheduled workflows** in public repos after 60 days
   without activity (commits, issues, pull requests; scheduled runs don't
-  count). The question issue and the update's pull request count, and
-  Caltrain publishes a new timetable shortly before it takes effect, so the
-  workflows will be running when it matters. If they've been turned off,
-  GitHub says so on the Actions tab, and either can be run by hand.
+  count). An update's pull request counts, and Caltrain publishes a new
+  timetable shortly before it takes effect, so the switch will be running
+  when it matters. If it has been turned off, GitHub says so on the Actions
+  tab, and it can be run by hand.
 - **The switch deploys itself:** a push made with a workflow's own token
   doesn't start other workflows, so it can't rely on the CI deploy.
-- **Locally:** `npm run schedule:update -- --go-live YYYY-MM-DD` and
-  `npm run schedule:switch` do the same.
+- **Pull requests the update opens don't run the CI check,** for the same
+  reason. The update runs the same checks itself before opening one.
 
 ## Loading the feed
 
@@ -241,7 +243,7 @@ Both serve the feed from `public/feed/`. To compare with another feed, set
 run dev`.
 
 ```bash
-npm run schedule:update                          # check; with a new timetable, print the question
-npm run schedule:update -- --go-live 2027-01-30   # write that timetable's dated file
+npm run schedule:update                          # with a new timetable: write it, go-live tomorrow
+npm run schedule:update -- --go-live 2027-01-30   # ... or with this go-live date
 npm run schedule:switch                           # what the daily switch runs
 ```

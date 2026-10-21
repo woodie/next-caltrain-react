@@ -1,23 +1,40 @@
-import { readdirSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 
-// Every schedule is kept as public/feed/schedule-YYYY-MM-DD.json, named for
-// the day it goes live. The one live today is also copied to
-// public/feed/schedule.json, the name the apps read.
+// Each timetable is kept as public/feed/gtfs-<version>.json, named for the
+// GTFS build it came from and never renamed. public/feed/go-live.json says
+// when each one goes live, one line per timetable, so a go-live date is a
+// one-line edit (in a pull request, even from the GitHub app). The timetable
+// live today is copied to public/feed/schedule.json, the name the apps read.
 export const FEED_DIR = 'public/feed'
 export const CURRENT = `${FEED_DIR}/schedule.json`
+export const GO_LIVE = `${FEED_DIR}/go-live.json`
 
-const DATED = /^schedule-(\d{4}-\d{2}-\d{2})\.json$/
+export type GoLiveDates = Record<string, string> // timetable file name -> YYYY-MM-DD
 
-export const datedPath = (goLive: string) => `${FEED_DIR}/schedule-${goLive}.json`
-
-/** Go-live dates of the dated schedule files, oldest first. */
-export function goLiveDates (names: string[] = safeReaddir(FEED_DIR)): string[] {
-  return names.map((name) => DATED.exec(name)?.[1]).filter((d): d is string => d !== undefined).sort()
+/** "gtfs-20260610-2225.json" for a feed_version of "UTC: 10-Jun-2026 22:25" (scheduleDate). */
+export function timetableName (scheduleDate: number): string {
+  const iso = new Date(scheduleDate).toISOString() // 2026-06-10T22:25:00.000Z
+  return `gtfs-${iso.slice(0, 10).replaceAll('-', '')}-${iso.slice(11, 16).replace(':', '')}.json`
 }
 
-/** The go-live date of the schedule that should be live on `today`, if any. */
-export function liveOn (today: string, dates: string[]): string | null {
-  return dates.filter((d) => d <= today).at(-1) ?? null
+export const timetablePath = (name: string) => `${FEED_DIR}/${name}`
+
+export function readGoLive (): GoLiveDates {
+  return existsSync(GO_LIVE) ? JSON.parse(readFileSync(GO_LIVE, 'utf8')) : {}
+}
+
+/** One timetable per line, by go-live date, so the date is easy to find and edit. */
+export function writeGoLive (dates: GoLiveDates): void {
+  const entries = Object.entries(dates).sort(([, a], [, b]) => a.localeCompare(b))
+  const lines = entries.map(([name, date], i) => `  ${JSON.stringify(name)}: ${JSON.stringify(date)}${i < entries.length - 1 ? ',' : ''}`)
+  writeFileSync(GO_LIVE, `{\n${lines.join('\n')}\n}\n`)
+}
+
+/** The timetable that should be live on `today`: the latest go-live date that has arrived. */
+export function liveOn (today: string, dates: GoLiveDates): string | null {
+  const arrived = Object.entries(dates).filter(([, date]) => date <= today)
+  arrived.sort(([, a], [, b]) => a.localeCompare(b))
+  return arrived.at(-1)?.[0] ?? null
 }
 
 /** Today's date in Pacific time, where Caltrain runs. */
@@ -25,10 +42,7 @@ export function pacificToday (now: Date = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(now)
 }
 
-function safeReaddir (dir: string): string[] {
-  try {
-    return readdirSync(dir)
-  } catch {
-    return []
-  }
+/** Tomorrow's date in Pacific time: the proposed go-live date for a new timetable. */
+export function pacificTomorrow (now: Date = new Date()): string {
+  return pacificToday(new Date(now.getTime() + 24 * 3600 * 1000))
 }
