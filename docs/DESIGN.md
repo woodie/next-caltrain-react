@@ -135,10 +135,11 @@ It adds:
 - `expiresAt`: when the server will next check for a new GTFS (ISO 8601)
 - `feedVersion`: Caltrain's `feed_version` string
 
-The iOS app's `Codable` decoding ignores keys it doesn't know. The Android
-app needs checking: kotlinx.serialization rejects unknown keys unless it's
-configured with `ignoreUnknownKeys`. If either app can't take the extra keys,
-they go in response headers instead.
+Both apps ignore keys they don't know, so the extra fields are safe:
+next-caltrain-swift decodes with `Codable` (`struct Schedule: Codable` in
+`Sources/CaltrainSchedule.swift`), and next-caltrain-kotlin reads only the
+keys it asks for from an `org.json` `JSONObject` (`Schedule.fromJson` in
+`Schedule.kt`).
 
 ## Holiday schedule
 
