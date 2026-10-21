@@ -53,8 +53,12 @@ export function HomeScreen ({ vm, act, showTripList, showStationSelection, showA
         {vm.hasManualSelection && (
           <IconButton icon={arrowRotateCcwIcon} label="Back to the next train" onClick={() => act((vm) => vm.resetToNext())} />
         )}
-        <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
         <IconButton icon={arrowsLeftRightIcon} label="Swap stations" onClick={() => act((vm) => vm.swapStations())} />
+      </div>
+      {/* Below swap, where the trip list has it too. */}
+      <div className="toolbar second-row">
+        <span className="spacer" />
+        <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
       </div>
 
       <div
