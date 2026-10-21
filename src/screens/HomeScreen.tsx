@@ -58,7 +58,7 @@ export function HomeScreen ({ vm, act, showTripList, showStationSelection, showA
       {/* Below swap, where the trip list has it too. */}
       <div className="toolbar second-row">
         <span className="spacer" />
-        <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
+        <IconButton icon={calendarIcon} label="Create calendar event" onClick={showCalendar} />
       </div>
 
       <div

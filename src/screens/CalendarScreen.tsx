@@ -50,7 +50,7 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
     <div className="screen calendar">
       <div className="toolbar">
         <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />
-        <span className="title centered">Add to Calendar</span>
+        <span className="title centered">Create Calendar Event</span>
         <span className="icon-placeholder" />
       </div>
       <div className="calendar-content">

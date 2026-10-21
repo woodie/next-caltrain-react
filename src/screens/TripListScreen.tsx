@@ -73,7 +73,7 @@ export function TripListScreen ({ vm, act, back, showTrip, showStationSelection,
         <StationNames origin={vm.origin} destination={vm.destination} onTap={showStationSelection} />
         <span className="spacer" />
         {/* Below swap, mirroring the back button; the same spot as on the home screen. */}
-        <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
+        <IconButton icon={calendarIcon} label="Create calendar event" onClick={showCalendar} />
       </div>
       <button
         type="button"
