@@ -223,17 +223,17 @@ Verified before writing the design, so they don't need re-checking:
 
 ## Current status
 
-The web app (PR #2, merged) runs locally against the deployed feed or a
-local one. Branch `feature/3-feed-client` reworks the repo into a plain
-React app at the root, static on App Engine, with the CI/deploy workflow.
-Not deployed yet.
+Live at https://next-caltrain-app.appspot.com/ (2026-10-21), as the
+`default` service, deployed by GitHub Actions on every push to `main`;
+checked on Woodie's iPhone in Chrome. The repo was reworked into a plain
+React app at the root (branch `feature/3-feed-client`; PR #3 was closed
+by mistake without merging, so it was merged locally and pushed). The
+README has screenshots in `pics/`, like the Swift and Kotlin READMEs.
 
 ## Next steps
 
-1. Merge this repo first (App Engine needs the default service before any
-   other), then next-caltrain-feed.
-2. Port the five spec files from the apps, plus the script that diffs their
+1. Port the five spec files from the apps, plus the script that diffs their
    describe/context/it text against next-caltrain-swift and
    next-caltrain-kotlin.
-3. Depend on next-caltrain-feed's JavaScript client package once it exists,
+2. Depend on next-caltrain-feed's JavaScript client package once it exists,
    instead of `src/lib/Schedule.ts`.
