@@ -1,0 +1,57 @@
+# Checks Caltrain's GTFS for a new timetable: every Monday, and whenever the
+# "Update schedule" button is pressed (Actions tab, or the GitHub app).
+#
+# A new timetable becomes a pull request adding public/feed/gtfs-<version>.json
+# and its line in public/feed/go-live.json, with a proposed go-live date
+# (tomorrow, unless one is given). Change the date to the real one in the
+# pull request before merging. The daily switch workflow makes the timetable
+# live on that date. No new timetable: nothing happens.
+name: Update schedule
+
+on:
+  schedule:
+    - cron: "0 16 * * 1" # Mondays, 9 AM PDT / 8 AM PST
+  workflow_dispatch:
+    inputs:
+      go_live:
+        description: "Proposed go-live date (YYYY-MM-DD). Blank: tomorrow. Can be changed in the pull request."
+        required: false
+      force:
+        description: "Make the pull request even if the GTFS hasn't changed"
+        type: boolean
+        default: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to push the pull request's branch
+      pull-requests: write # to open it
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - id: update
+        env:
+          GO_LIVE: ${{ inputs.go_live }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
+        run: npm run -s schedule:update -- --go-live "$GO_LIVE" $FORCE
+      - if: steps.update.outputs.status == 'written'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.update.outputs.branch }}
+          GO_LIVE: ${{ steps.update.outputs.go_live }}
+          FEED_VERSION: ${{ steps.update.outputs.feed_version }}
+          SUMMARY: ${{ steps.update.outputs.summary }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add public/feed
+          git commit -m "New timetable from GTFS $FEED_VERSION (proposed go-live $GO_LIVE)"
+          git push --force -u origin "$BRANCH"
+          gh pr create --title "New Caltrain timetable (GTFS $FEED_VERSION)" --body-file "$SUMMARY" ||
+            gh pr edit "$BRANCH" --body-file "$SUMMARY"
