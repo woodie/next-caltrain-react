@@ -70,7 +70,8 @@ stacks.
 
 ## Adding a trip to the calendar
 
-The calendar button on the home screen and the trip list opens a planner
+The calendar button, always directly below the swap button (on the trip
+list it also mirrors the back button), opens a planner
 modeled on Google Maps: **Leave at** or **Arrive by**, a time and a date.
 It shows the planned train with the trains before and after it (the
 planned one boxed, like the trip list's selection) and refreshes as the

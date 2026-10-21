@@ -67,12 +67,12 @@ export function TripListScreen ({ vm, act, back, showTrip, showStationSelection,
         )}
         <IconButton icon={arrowsLeftRightIcon} label="Swap stations" onClick={() => act((vm) => vm.swapStations())} />
       </div>
-      <div className="toolbar">
+      <div className="toolbar second-row">
         <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />
         <span className="spacer" />
         <StationNames origin={vm.origin} destination={vm.destination} onTap={showStationSelection} />
         <span className="spacer" />
-        {/* Mirrors the back button across the station names. */}
+        {/* Below swap, mirroring the back button; the same spot as on the home screen. */}
         <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
       </div>
       <button

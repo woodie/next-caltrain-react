@@ -79,6 +79,12 @@ button {
   min-height: 52px;
 }
 
+/* The row under the top bar is as tall as two lines of station names on every
+   screen, so the calendar button sits in the same place on each. */
+.toolbar.second-row {
+  min-height: calc(2 * var(--font-origin) * 1.2 + 8px);
+}
+
 .toolbar .title {
   font-size: 18px;
   white-space: nowrap;
