@@ -1,0 +1,51 @@
+# The "Update schedule" button (Actions tab, or the GitHub app): downloads
+# Caltrain's GTFS and, if the timetable changed, opens a pull request adding
+# public/feed/schedule-<go-live>.json. Merging adds the file; the daily switch
+# workflow makes it live on its go-live date.
+name: Update schedule
+
+on:
+  workflow_dispatch:
+    inputs:
+      go_live:
+        description: "Go-live date (YYYY-MM-DD). Blank: the timetable's own start date, or today."
+        required: false
+      force:
+        description: "Write the file even if the GTFS hasn't changed"
+        type: boolean
+        default: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to push the pull request's branch
+      pull-requests: write # to open it
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - id: update
+        env:
+          GO_LIVE: ${{ inputs.go_live }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
+        run: npm run -s schedule:update -- --go-live "$GO_LIVE" $FORCE
+      - if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GO_LIVE: ${{ steps.update.outputs.go_live }}
+          FEED_VERSION: ${{ steps.update.outputs.feed_version }}
+          SUMMARY: ${{ steps.update.outputs.summary }}
+        run: |
+          branch="schedule/$GO_LIVE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add public/feed
+          git commit -m "Schedule from GTFS $FEED_VERSION, going live $GO_LIVE"
+          git push --force -u origin "$branch"
+          gh pr create --title "Schedule going live $GO_LIVE" --body-file "$SUMMARY" ||
+            gh pr edit "$branch" --body-file "$SUMMARY"

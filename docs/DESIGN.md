@@ -6,22 +6,75 @@
    touch behavior and their specs.
 2. **Be a clean example of a React app reading a feed.** The app knows the
    feed's format and nothing about where it comes from.
-3. **Learn KendoReact** (the feed side of the job-prep stack, FastAPI and
-   SQLAlchemy, lives in next-caltrain-feed).
+3. **Learn KendoReact.** The job-prep stack's server side (FastAPI and
+   SQLAlchemy) was tried in next-caltrain-feed and retired: a schedule that
+   changes once a year doesn't need a server or a database.
+4. **No servers to run:** the schedule is built by GitHub Actions and served
+   as a static file.
 
 ## Architecture
 
-The app is the `default` service of the App Engine project
-`next-caltrain-app`, as static files. The feed is that project's `feed`
-service, from next-caltrain-feed, whose `dispatch.yaml` routes `/feed/*` to
-it. So the app fetches `/feed/schedule.json` from its own origin, with no
-CORS, and each repo deploys only its own service.
+Static files only, on App Engine (project `next-caltrain-app`): the app,
+and the schedule feed it reads, `/feed/schedule.json`. No server, no
+database. The feed is built from Caltrain's GTFS by this repo's own
+scripts and committed as a file (see "Schedule updates" below), because
+Caltrain changes its timetable about once a year.
 
 | Where | `/feed/schedule.json` comes from |
 |---|---|
-| App Engine | The `feed` service, through `dispatch.yaml` |
-| `npm run dev`, `npm run server` | Vite's proxy, to `FEED_ORIGIN` (default `https://next-caltrain-app.appspot.com`) |
+| App Engine | `public/feed/schedule.json`, cached for 10 minutes |
+| `npm run dev`, `npm run server` | The same file; set `FEED_ORIGIN` to proxy `/feed` to another site instead (e.g. next-caltrain-pwa's feed, to compare) |
 | A build with `VITE_SCHEDULE_URL` set | That URL, for pointing a build at another feed |
+
+## Schedule updates
+
+Two GitHub Actions workflows keep the feed current, with no laptop and no
+cloud server involved.
+
+**Update schedule** (`.github/workflows/update-schedule.yml`), started by
+hand from the Actions tab or the GitHub app, with an optional go-live
+date:
+
+1. Downloads Caltrain's GTFS and builds `schedule.json` from it in
+   TypeScript (`scripts/schedule/build.ts`, ported from next-caltrain-pwa's
+   `generate.py` and `update_json.py`; its weekday, weekend and holiday
+   tables match that pipeline's GTFS parse exactly).
+2. Checks it: errors (an empty table, a train with the wrong number of
+   stops, an impossible time) stop the run; warnings (a train reaching a
+   station before the one it left, i.e. bad GTFS data) are reported.
+3. If the GTFS `feed_version` is the same as the newest schedule file's,
+   stops: nothing changed.
+4. Otherwise writes `public/feed/schedule-<go-live>.json` and opens a pull
+   request whose description lists what changed (trains added, removed and
+   retimed; special dates) and any warnings. The go-live date defaults to
+   the timetable's own start date (`feed_start_date`), or today if that's
+   past.
+
+**Switch schedule** (`.github/workflows/switch-schedule.yml`), daily at
+3:30 AM PDT (2:30 AM PST), after the schedule day starts: copies the newest
+dated file whose go-live date has arrived to `public/feed/schedule.json`,
+the name the apps read, then commits and deploys. On most days nothing
+changes. It can also be run by hand.
+
+So every timetable stays in the repo under its go-live date, and the live
+one is also under the short name. Merging an update's pull request only
+adds the dated file; the switch makes it live.
+
+- **Holidays come from GTFS alone,** as do the special dates (from
+  `calendar_dates.txt`: weekend service on a weekday is `1`, the modified
+  schedule is `2`). Where GTFS disagrees with Caltrain's published PDF
+  (see next-caltrain-pwa's `docs/HOLIDAY.md`), this feed shows GTFS's
+  version, e.g. MLK Day 2027 as January 27 rather than 18.
+- **The files are formatted one train per line,** so a pull request shows
+  exactly which trains changed.
+- **GitHub turns off scheduled workflows** in public repos after 60 days
+  without activity. An update's pull request counts as activity, and
+  Caltrain publishes a new timetable shortly before it takes effect, so the
+  switch will be running when it matters. If not, run it by hand.
+- **The switch deploys itself:** a push made with a workflow's own token
+  doesn't start other workflows, so it can't rely on the CI deploy.
+- **Locally:** `npm run schedule:update -- --go-live YYYY-MM-DD` and
+  `npm run schedule:switch` do the same.
 
 ## Loading the feed
 
@@ -162,7 +215,7 @@ agree on one command. The workflow signs in to Google Cloud with Workload
 Identity Federation: GitHub's identity token for the run is exchanged for
 short-lived credentials of a deploy-only service account, so no long-lived
 key is stored anywhere. The workflow names both; they aren't secrets,
-since the account only trusts this repo and next-caltrain-feed.
+since the account only trusts named repos.
 
 ## Development
 
@@ -172,6 +225,11 @@ npm run check   # type-check, lint and specs, before pushing
 npm run server  # the production build on http://localhost:8080/
 ```
 
-Both local servers proxy `/feed` to `FEED_ORIGIN`; set
-`FEED_ORIGIN=http://localhost:8080` to use a local next-caltrain-feed
-(`make server` there) with `npm run dev`.
+Both serve the feed from `public/feed/`. To compare with another feed, set
+`FEED_ORIGIN`, e.g. `FEED_ORIGIN=https://next-caltrain-pwa.appspot.com npm
+run dev`.
+
+```bash
+npm run schedule:update -- --go-live 2027-01-30   # what the Update schedule button runs
+npm run schedule:switch                           # what the daily switch runs
+```

@@ -208,6 +208,27 @@ Verified before writing the design, so they don't need re-checking:
   '(describe|context|it)\("[^"]*"'`) and diff against the TypeScript
   version.
 
+## The schedule pipeline replaced the feed service (2026-10-21)
+
+Woodie's call: SQLAlchemy wasn't going to teach anything worth $10 a month,
+and Caltrain changes its timetable about once a year. So the feed is a
+static file built by GitHub Actions in this repo (see "Schedule updates" in
+`docs/DESIGN.md`): an **Update schedule** button that opens a PR with
+`public/feed/schedule-<go-live>.json`, and a daily **Switch schedule** that
+copies the live one to `public/feed/schedule.json` and deploys.
+
+- **The TypeScript port is exact:** run against the same GTFS, it matches
+  next-caltrain-pwa's output for stations, weekday and weekend, and its
+  GTFS holiday parse (`data/_holiday_*.csv`), train for train.
+- **Retiring the old pieces,** once this is live: deploy an empty
+  `dispatch.yaml` (so `/feed/*` stops going to the `feed` service), delete
+  the `feed` service, archive next-caltrain-feed, and Woodie deletes the
+  Cloud SQL instance `next-caltrain-db`. The `next-caltrain-feed` *project*
+  stays: the shared Workload Identity pool lives there.
+- **Repo setting:** the update workflow opens PRs with the workflow's own
+  token, which needs "Allow GitHub Actions to create and approve pull
+  requests" turned on. Such PRs don't trigger the CI check workflow.
+
 ## Gotchas
 
 - **Vitest stays on 4.x** while specs use `justBeforeEach` from

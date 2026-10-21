@@ -19,12 +19,14 @@ to earlier or later trains.
 
 ## How it gets its data
 
-The whole timetable comes from one JSON feed,
-[next-caltrain-feed](https://github.com/woodie/next-caltrain-feed), at
-`/feed/schedule.json` on the same site. The app downloads it at most once a
-day (the schedule day starts at 2:00 AM), keeps it in `localStorage`, and
-falls back to that copy when offline. Everything else, from finding the
-next train to transfers at San Jose Diridon, happens in the browser.
+The whole timetable is one JSON file, `/feed/schedule.json` on the same
+site, built from Caltrain's published GTFS feed by this repo's scripts. A
+GitHub Actions button builds a new one when Caltrain publishes a new
+timetable, and a daily workflow switches to it on its go-live date. The app
+downloads it at most once a day (the schedule day starts at 2:00 AM), keeps
+it in `localStorage`, and falls back to that copy when offline. Everything
+else, from finding the next train to transfers at San Jose Diridon, happens
+in the browser.
 
 See [docs/DESIGN.md](docs/DESIGN.md) for the details.
 
@@ -49,4 +51,3 @@ another one (e.g. `FEED_ORIGIN=http://localhost:8080`).
 
 - **iOS app:** [next-caltrain-swift](https://github.com/woodie/next-caltrain-swift)
 - **Android app:** [next-caltrain-kotlin](https://github.com/woodie/next-caltrain-kotlin)
-- **Schedule feed:** [next-caltrain-feed](https://github.com/woodie/next-caltrain-feed)

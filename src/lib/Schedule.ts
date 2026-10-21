@@ -13,27 +13,14 @@ export const scheduleLabel: Record<ScheduleType, string> = {
   [ScheduleType.Holiday]: 'Holiday',
 }
 
-export type TimeTable = Record<string, (number | null)[]>
-
 // The parsed schedule.json, the same format the iOS and Android apps read.
-export interface Schedule {
-  specialDates: Record<string, number>
-  northStops: string[]
-  southStops: string[]
-  northWeekday: TimeTable
-  northWeekend: TimeTable
-  northHoliday: TimeTable
-  southWeekday: TimeTable
-  southWeekend: TimeTable
-  southHoliday: TimeTable
-  scheduleDate: number | null // epoch ms
-}
+export type { Schedule, TimeTable } from './ScheduleFormat'
+import type { Schedule, TimeTable } from './ScheduleFormat'
 
 export class ScheduleError extends Error {}
 
-// Same origin: on App Engine, dispatch.yaml routes /feed/* to the feed
-// service; locally, vite.config.ts proxies it. VITE_SCHEDULE_URL can point
-// a build at another feed.
+// A static file on the same origin (public/feed/schedule.json, kept current by
+// the schedule workflows). VITE_SCHEDULE_URL can point a build at another feed.
 export const scheduleUrl = import.meta.env.VITE_SCHEDULE_URL ?? '/feed/schedule.json'
 
 // Not private: specs read/write these keys directly instead of hardcoding the strings.
