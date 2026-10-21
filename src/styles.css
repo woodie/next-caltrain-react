@@ -301,6 +301,9 @@ button {
 
 .calendar-row > * { flex: 1; }
 
+/* Under 16px, iOS zooms the page in when a field gets focus. */
+.calendar-row .k-input, .calendar-row .k-picker { font-size: var(--font-train); }
+
 .schedule-label { color: var(--cal-past); }
 
 .planned-trains {

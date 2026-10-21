@@ -1,5 +1,5 @@
 import { Button } from '@progress/kendo-react-buttons'
-import { DateInput, DatePicker } from '@progress/kendo-react-dateinputs'
+import { DatePicker } from '@progress/kendo-react-dateinputs'
 import { DropDownList } from '@progress/kendo-react-dropdowns'
 import { calendarIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { useState } from 'react'
@@ -57,9 +57,9 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
         <StationNames origin={vm.origin} destination={vm.destination} onTap={showStationSelection} />
         <div className="calendar-row">
           <DropDownList data={modes} textField="text" dataItemKey="value" value={mode} onChange={(e) => setMode(e.value)} />
-          {/* DateInput, not TimePicker: TimePicker is a paid KendoReact
-              component and shows a license watermark without a key. */}
-          <DateInput value={time} onChange={(e) => e.value && setTime(e.value)} format="h:mm a" steps={{ minute: 5 }} spinners />
+          <span className="k-input k-input-md k-rounded-md k-input-solid">
+            <input type="time" className="k-input-inner" aria-label="Time" value={timeValue(time)} onChange={(e) => e.target.value && setTime(parseTime(e.target.value))} />
+          </span>
         </div>
         <div className="calendar-row">
           <DatePicker value={date} onChange={(e) => e.value && setDate(e.value)} format="EEE, MMM d" />
@@ -87,6 +87,17 @@ function initialTime (vm: TripViewModel): Date {
   const minutes = trip ? tripDepart(trip) % 1440 : vm.goodTimes.minutes % 1440
   const d = new Date()
   d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0)
+  return d
+}
+
+function timeValue (d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+function parseTime (value: string): Date {
+  const [hours, minutes] = value.split(':').map(Number)
+  const d = new Date()
+  d.setHours(hours, minutes, 0, 0)
   return d
 }
 
