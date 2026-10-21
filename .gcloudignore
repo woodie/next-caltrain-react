@@ -1,0 +1,5 @@
+# Upload only app.yaml and the built app (npm run build writes dist/).
+*
+!app.yaml
+!dist/
+!dist/**

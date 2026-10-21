@@ -1,0 +1,46 @@
+# Pull requests are checked; every push to main is deployed, so main is
+# always what's live (see "Deploying" in docs/DESIGN.md).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
+  deploy:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    concurrency: deploy
+    permissions:
+      contents: read
+      id-token: write # for Workload Identity Federation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: google-github-actions/auth@v2
+        with:
+          # Woodie's shared GitHub pool (in next-caltrain-feed), and this
+          # project's deploy-only account, which trusts only named repos.
+          workload_identity_provider: projects/1061341448976/locations/global/workloadIdentityPools/github/providers/github
+          service_account: github-deploy@next-caltrain-app.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: npm run deploy

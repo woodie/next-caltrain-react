@@ -31,7 +31,9 @@ export interface Schedule {
 
 export class ScheduleError extends Error {}
 
-// Same origin in production (served next to the app); vite.config.ts proxies it in development.
+// Same origin: on App Engine, dispatch.yaml routes /feed/* to the feed
+// service; locally, vite.config.ts proxies it. VITE_SCHEDULE_URL can point
+// a build at another feed.
 export const scheduleUrl = import.meta.env.VITE_SCHEDULE_URL ?? '/feed/schedule.json'
 
 // Not private: specs read/write these keys directly instead of hardcoding the strings.

@@ -1,0 +1,24 @@
+# The default service of next-caltrain-app: static files only. The app
+# fetches /feed/schedule.json from this same origin, and dispatch.yaml
+# (owned by next-caltrain-feed) routes /feed/* to the feed service.
+service: default
+runtime: python313
+
+# App Engine uses the first handler that matches, top to bottom.
+handlers:
+- url: /
+  static_files: dist/index.html
+  upload: dist/index.html
+  secure: always
+  expiration: 5m
+
+# Vite's assets have content hashes in their names, so they can be cached long.
+- url: /assets
+  static_dir: dist/assets
+  secure: always
+  expiration: 365d
+
+- url: /(.*\.(png|ico|svg))$
+  static_files: dist/\1
+  upload: dist/.*\.(png|ico|svg)$
+  secure: always

@@ -1,13 +1,16 @@
 {
-  "name": "web",
+  "name": "next-caltrain-react",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "lint": "oxlint --fix src",
+    "test": "vitest run --passWithNoTests",
+    "check": "tsc -b && oxlint src && vitest run --passWithNoTests --reporter=dot",
+    "server": "npm run build && vite preview --port 8080",
+    "deploy": "npm run check && npm run build && gcloud app deploy app.yaml --quiet --project=next-caltrain-app"
   },
   "dependencies": {
     "@progress/kendo-licensing": "^1.11.3",
@@ -31,6 +34,6 @@
     "penultimate": "^0.1.1",
     "typescript": "~6.0.3",
     "vite": "^8.3.4",
-    "vitest": "^5.0.5"
+    "vitest": "^4.1.12"
   }
 }
