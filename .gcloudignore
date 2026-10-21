@@ -1,0 +1,14 @@
+# Upload only the Python app and the built web client.
+.gcloudignore
+.git
+.gitignore
+.venv
+__pycache__
+docs/
+spec/
+LICENSE
+Makefile
+README.md
+requirements-dev.txt
+web/*
+!web/dist/

@@ -35,6 +35,22 @@ explain FastAPI idioms (dependencies, Pydantic models, async), SQLAlchemy
 2.0 specifics (typed `Mapped` models, sessions, loading strategies,
 Alembic) and KendoReact's components and licensing.
 
+## The product, and which port is the baseline
+
+This is the fifth port of Next Caltrain: J2ME, then the KaiOS PWA, then
+Swift, Kotlin and now React. What sets it apart from other Caltrain apps,
+in Woodie's words: it doesn't show you a timetable and make you figure out
+what to do. It works out which schedule applies now (weekday, weekend,
+holiday) and **always has a train selected**. The selection started as a
+requirement of the D-pad phones, but it's what makes the countdown to the
+next train possible, which other apps don't have. The "stepping, not
+scrolling" trip list is the same D-pad heritage.
+
+**next-caltrain-swift is the baseline** (agreed 2026-10-21). The PWA's
+`CaltrainService.js`, which its own docs still call the reference, has
+fallen behind: no `TripViewModel`, no tomorrow trips, no saved stations.
+Port from Swift, and check Kotlin agrees.
+
 ## How this got here
 
 The same session (2026-10-20) also reworked next-caltrain-pwa, which this
@@ -182,6 +198,19 @@ Verified before writing the design, so they don't need re-checking:
   version.
 - **Makefile targets** (`lint`, `test`, `check`) once there's code to run.
 - **Postgres in Docker** for tests and local runs, never Cloud SQL.
+
+## Gotchas
+
+- **Vitest stays on 4.x** while specs use `justBeforeEach` from
+  penultimate, which declares `vitest >=4.1.0 <5` as a peer. The Vite
+  scaffold pulled in Vitest 5, and npm 11.16 reported the conflict as an
+  internal crash (`Cannot read properties of null (reading 'children')`,
+  then `'edgesOut'`) that also corrupted the lockfile. `legacy-peer-deps`
+  only hid it and dropped KendoReact's own peers
+  (`kendo-smartpaste-common`, `kendo-popup-common`, ...). The fix was
+  pinning `vitest ^4.1.12` and regenerating the lockfile.
+- **KendoReact's flat Button** sets `background: none !important`; the
+  round icon buttons use `fillMode="solid"` recolored in `styles.css`.
 
 ## Current status
 
