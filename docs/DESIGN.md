@@ -7,8 +7,8 @@
 2. **Be a clean example of a React app reading a feed.** The app knows the
    feed's format and nothing about where it comes from.
 3. **Learn KendoReact.** The job-prep stack's server side (FastAPI and
-   SQLAlchemy) was tried in next-caltrain-feed and retired: a schedule that
-   changes once a year doesn't need a server or a database.
+   SQLAlchemy) was tried and retired: a schedule that changes once a year
+   doesn't need a server or a database.
 4. **No servers to run:** the schedule is built by GitHub Actions and served
    as a static file.
 

@@ -97,14 +97,15 @@ no other service, nothing running between deploys.
   FastAPI, SQLAlchemy, React with Kendo UI and TypeScript. He knows older
   Python/Flask (Google, internal), React/TS and relational databases (20+
   years) well; the new parts were FastAPI, SQLAlchemy 2.0 and KendoReact.
-- **The backend was tried and retired.** A FastAPI feed service grew into
-  next-caltrain-feed (now archived), first planned on Datastore through
-  `python-datastore-sqlalchemy` (dropped: its transactions only log), then
-  on a $10/month Cloud SQL Postgres (never used). Woodie's call: SQLAlchemy
-  wasn't going to teach anything worth $10 a month, and the timetable
-  changes about once a year, so the feed became static files built by
-  GitHub Actions. The Cloud SQL instance and Datastore database are
-  deleted, the `feed` service is deleted, and `dispatch.yaml` is empty.
+- **The backend was tried and retired.** A FastAPI feed service, briefly
+  its own repo and project (next-caltrain-feed, both since deleted), was
+  first planned on Datastore through `python-datastore-sqlalchemy`
+  (dropped: its transactions only log), then on a $10/month Cloud SQL
+  Postgres (never used). Woodie's call: SQLAlchemy wasn't going to teach
+  anything worth $10 a month, and the timetable changes about once a
+  year, so the feed became static files built by GitHub Actions. The
+  Cloud SQL instance and Datastore database are deleted, the `feed`
+  service is deleted, and `dispatch.yaml` is empty.
 - **KendoReact is what's left of the job-prep stack.** It does real work
   only on the calendar planner (`DropDownList`, `DateInput`, `DatePicker`,
   `Button`); the trip list is deliberately not a Grid (it steps instead of
