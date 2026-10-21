@@ -2,6 +2,13 @@
 
 Live countdown to your next Caltrain, in the browser.
 
+<img width="25%" 
+  src="https://github.com/woodie/next-caltrain-react/blob/main/pics/HomeScreen.png">
+<img width="25%"
+  src="https://github.com/woodie/next-caltrain-react/blob/main/pics/TripListScreen.png">
+<img width="25%"
+  src="https://github.com/woodie/next-caltrain-react/blob/main/pics/TripDetailScreen.png">
+
 https://next-caltrain-app.appspot.com/
 
 A React + TypeScript web app, built with KendoReact, that does what the
