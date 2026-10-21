@@ -1,25 +1,45 @@
 # Next Caltrain React
 
-A cloud version of the Next Caltrain schedule pipeline, plus a web clone of
-the iOS and Android apps.
+Live countdown to your next Caltrain, in the browser.
 
-- **Backend:** FastAPI on App Engine (standard, Python), with SQLAlchemy over
-  PostgreSQL on Cloud SQL, for now; a move to the free Datastore is planned.
-  It turns Caltrain's GTFS feed into the same `schedule.json` the apps read,
-  on demand, and caches it until the next morning.
-- **Web client:** React + TypeScript with KendoReact, mirroring the
-  Swift/Kotlin apps and their tests. It only depends on the feed, so the
-  backend underneath can be swapped.
+https://next-caltrain-app.appspot.com/
 
-The feed is served from https://next-caltrain-app.appspot.com/feed/schedule.json,
-next to the existing https://next-caltrain-pwa.appspot.com/feed/schedule.json,
-so the two can be diffed.
+A React + TypeScript web app, built with KendoReact, that does what the
+Next Caltrain iOS and Android apps do. It works out which schedule runs
+today (weekday, weekend or holiday), always has a train selected, and
+counts down to it. Drag on the countdown circle or the train list to step
+to earlier or later trains.
 
-See [docs/DESIGN.md](docs/DESIGN.md) for how it works and why.
+## How it gets its data
+
+The whole timetable comes from one JSON feed,
+[next-caltrain-feed](https://github.com/woodie/next-caltrain-feed), at
+`/feed/schedule.json` on the same site. The app downloads it at most once a
+day (the schedule day starts at 2:00 AM), keeps it in `localStorage`, and
+falls back to that copy when offline. Everything else, from finding the
+next train to transfers at San Jose Diridon, happens in the browser.
+
+See [docs/DESIGN.md](docs/DESIGN.md) for the details.
+
+## Development
+
+Needs Node.
+
+```bash
+npm install
+npm run dev     # hot reload on http://localhost:5173/
+npm run check   # type-check, lint and specs, before pushing
+npm run server  # the production build on http://localhost:8080/
+```
+
+Merging to `main` deploys: a GitHub Actions workflow checks, builds and
+publishes it to App Engine.
+
+Locally, `/feed` is proxied to the deployed feed; set `FEED_ORIGIN` to use
+another one (e.g. `FEED_ORIGIN=http://localhost:8080`).
 
 ## Sibling projects
 
-- **Current feed and PWA:** [next-caltrain-pwa](https://github.com/woodie/next-caltrain-pwa),
-  built from GTFS plus hand-maintained holiday CSVs
 - **iOS app:** [next-caltrain-swift](https://github.com/woodie/next-caltrain-swift)
 - **Android app:** [next-caltrain-kotlin](https://github.com/woodie/next-caltrain-kotlin)
+- **Schedule feed:** [next-caltrain-feed](https://github.com/woodie/next-caltrain-feed)

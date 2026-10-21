@@ -1,8 +1,7 @@
 .DS_Store
 *.swp
-__pycache__
-.venv
-.pytest_cache
+*.log
+*.local
+.env.local
 node_modules
 dist
-.env

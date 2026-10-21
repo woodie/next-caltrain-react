@@ -5,17 +5,20 @@ structure, comments, prose) are in `~/workspace/woodie/docs/COWORK.md`.
 
 ## What this is
 
-A cloud rebuild of the Next Caltrain schedule pipeline, plus a web clone of
-the iOS and Android apps:
+The Next Caltrain web app: React + TypeScript with KendoReact, doing what
+the iOS and Android apps do, and a clean example of a React app reading a
+feed. It's the `default` service of the App Engine project
+`next-caltrain-app`; the schedule feed is that project's `feed` service,
+from **next-caltrain-feed**. The full design is in `docs/DESIGN.md`.
 
-- **Backend:** FastAPI on App Engine standard (Python 3.13), with SQLAlchemy
-  over PostgreSQL on Cloud SQL, for now. It builds `schedule.json` from Caltrain's GTFS on demand
-  and caches it until 3:00 AM Pacific the next morning.
-- **Web client:** React + TypeScript with KendoReact, reading the same feed
-  the apps read.
-
-The full design is in `docs/DESIGN.md`. This file covers why the project
-exists, how it got set up, and what a new session needs to know.
+**Split on 2026-10-21.** This repo started out holding the feed's backend
+too (FastAPI, SQLAlchemy, Cloud SQL). With four apps reading the feed,
+Woodie moved the feed to its own repo, next-caltrain-feed, and chose one
+App Engine project with two services over a second project. The sections
+below written before the split ("Why this stack", "How this got here",
+"Things checked so far") still describe the backend research and the
+Cloud SQL setup; that history belongs to next-caltrain-feed now, and moves
+there when it next needs editing.
 
 ## Why this stack
 
@@ -175,16 +178,23 @@ Verified before writing the design, so they don't need re-checking:
 
 ## Conventions here
 
-- **Production is next-caltrain-pwa's feed.** The apps read
-  `https://next-caltrain-pwa.appspot.com/feed/schedule.json`; this
-  project's feed is for comparison until it's trusted. Nothing here should
-  touch next-caltrain-pwa's deploy.
+- **Production is next-caltrain-pwa's feed.** The iOS and Android apps read
+  `https://next-caltrain-pwa.appspot.com/feed/schedule.json`. Nothing here
+  should touch next-caltrain-pwa's deploy.
+- **Merging to `main` is deploying.** GitHub Actions deploys every push to
+  `main`, so `main` is always what's live; don't deploy by hand (Woodie:
+  "having the push and deploy separate could lead to confusion"). Signing
+  in uses Workload Identity Federation (repo variables
+  `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_DEPLOY_SERVICE_ACCOUNT`), with
+  no stored key.
+- **Only Woodie pushes:** ask "Can I push this?" before any push, PR or
+  issue.
 - **Branches and PRs** for implementation, straight to `main` for docs, as in
-  the cross-project notes.
-- **Python 3.13** to match App Engine's `python313` runtime (3.13.16,
-  installed with mise).
-- **Tests** read like RSpec output: Mamba with `expects` for Python,
-  Vitest's tree reporter for the client, as in next-caltrain-pwa.
+  the cross-project notes. Since merging deploys, a docs-only commit to
+  `main` redeploys too, which is harmless.
+- **One `package.json` at the root,** with the house scripts (`dev`,
+  `build`, `lint`, `test`, `check`, `server`, `deploy`). No Makefile: there's
+  only one language here now.
 - **Spec text matches the apps.** Woodie put real effort into making
   next-caltrain-swift's and next-caltrain-kotlin's test output identical
   unless a difference reflects a real implementation difference (checked
@@ -196,8 +206,6 @@ Verified before writing the design, so they don't need re-checking:
   When porting, extract the names from both apps (`grep -oE
   '(describe|context|it)\("[^"]*"'`) and diff against the TypeScript
   version.
-- **Makefile targets** (`lint`, `test`, `check`) once there's code to run.
-- **Postgres in Docker** for tests and local runs, never Cloud SQL.
 
 ## Gotchas
 
@@ -214,21 +222,18 @@ Verified before writing the design, so they don't need re-checking:
 
 ## Current status
 
-The repo has the README, LICENSE and `docs/DESIGN.md`, and no code yet.
-The cloud project, App Engine app, Cloud SQL instance (with its database
-and IAM users) and the unused Datastore database exist; nothing is
-deployed.
+The web app (PR #2, merged) runs locally against the deployed feed or a
+local one. Branch `feature/3-feed-client` reworks the repo into a plain
+React app at the root, static on App Engine, with the CI/deploy workflow.
+Not deployed yet.
 
 ## Next steps
 
-1. Spike the risks, on a branch: a minimal FastAPI app on App Engine that
-   reads and writes bundled Memcache through `a2wsgi`, and does a
-   SQLAlchemy round trip to Cloud SQL through the Cloud SQL Python
-   Connector with IAM authentication.
-2. The data model and GTFS loader, with Mamba specs against Postgres in
-   Docker.
-3. The feed endpoint, with the expiry and lock behavior from
-   `docs/DESIGN.md`, plus the CSV endpoints.
-4. Diff the generated feed against next-caltrain-pwa's.
-5. The KendoReact client, porting `CaltrainService.js` and its tests.
-6. Add `docs/DEVELOPMENT.md` once there's a real dev loop.
+1. Set up Workload Identity Federation for this repo and next-caltrain-feed.
+2. Merge this repo first (App Engine needs the default service before any
+   other), then next-caltrain-feed.
+3. Port the five spec files from the apps, plus the script that diffs their
+   describe/context/it text against next-caltrain-swift and
+   next-caltrain-kotlin.
+4. Depend on next-caltrain-feed's JavaScript client package once it exists,
+   instead of `src/lib/Schedule.ts`.

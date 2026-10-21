@@ -1,14 +1,5 @@
-# Upload only the Python app and the built web client.
-.gcloudignore
-.git
-.gitignore
-.venv
-__pycache__
-docs/
-spec/
-LICENSE
-Makefile
-README.md
-requirements-dev.txt
-web/*
-!web/dist/
+# Upload only app.yaml and the built app (npm run build writes dist/).
+*
+!app.yaml
+!dist/
+!dist/**

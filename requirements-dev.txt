@@ -1,4 +1,0 @@
-expects
-httpx2
-mamba
-ruff
