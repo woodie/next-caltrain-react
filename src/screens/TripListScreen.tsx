@@ -1,4 +1,4 @@
-import { arrowRotateCcwIcon, arrowsLeftRightIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
+import { arrowRotateCcwIcon, arrowsLeftRightIcon, calendarIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { CaltrainService, type Trip, tripDepart } from '../lib/CaltrainService'
 import { GoodTimes } from '../lib/GoodTimes'
@@ -14,9 +14,10 @@ interface Props {
   back: () => void
   showTrip: (trip: Trip) => void
   showStationSelection: () => void
+  showCalendar: () => void
 }
 
-export function TripListScreen ({ vm, act, back, showTrip, showStationSelection }: Props) {
+export function TripListScreen ({ vm, act, back, showTrip, showStationSelection, showCalendar }: Props) {
   const drag = useStepDrag(vm.offset, vm.trips.length, (offset) => act((vm) => vm.setOffset(offset)))
   const listRef = useRef<HTMLDivElement>(null)
   const [rowCount, setRowCount] = useState(1)
@@ -64,6 +65,7 @@ export function TripListScreen ({ vm, act, back, showTrip, showStationSelection 
         {vm.hasManualSelection && (
           <IconButton icon={arrowRotateCcwIcon} label="Back to the next train" onClick={() => act((vm) => vm.resetToNext())} />
         )}
+        <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
         <IconButton icon={arrowsLeftRightIcon} label="Swap stations" onClick={() => act((vm) => vm.swapStations())} />
       </div>
       <div className="toolbar">
