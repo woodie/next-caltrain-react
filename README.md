@@ -19,7 +19,7 @@ See [docs/DESIGN.md](docs/DESIGN.md) for how it works and why.
 
 ## Sibling projects
 
-- [next-caltrain-pwa](https://github.com/woodie/next-caltrain-pwa): the
-  current feed pipeline (GTFS plus hand-maintained holiday CSVs) and the PWA
-- [next-caltrain-swift](https://github.com/woodie/next-caltrain-swift): iOS
-- [next-caltrain-kotlin](https://github.com/woodie/next-caltrain-kotlin): Android
+- **Current feed and PWA:** [next-caltrain-pwa](https://github.com/woodie/next-caltrain-pwa),
+  built from GTFS plus hand-maintained holiday CSVs
+- **iOS app:** [next-caltrain-swift](https://github.com/woodie/next-caltrain-swift)
+- **Android app:** [next-caltrain-kotlin](https://github.com/woodie/next-caltrain-kotlin)

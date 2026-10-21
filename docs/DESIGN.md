@@ -16,7 +16,7 @@
 
 ## Non-goals
 
-- Replacing next-caltrain-pwa's pipeline. It stays the production feed
+- Replacing the pipeline in next-caltrain-pwa. It stays the production feed
   until this one has been diffed against it and trusted.
 - Hand-maintained data. This feed is built from GTFS alone (see "Holiday
   schedule" below).
@@ -135,9 +135,10 @@ It adds:
 - `expiresAt`: when the server will next check for a new GTFS (ISO 8601)
 - `feedVersion`: Caltrain's `feed_version` string
 
-Both apps ignore keys they don't know, so the extra fields are safe:
-next-caltrain-swift decodes with `Codable` (`struct Schedule: Codable` in
-`Sources/CaltrainSchedule.swift`), and next-caltrain-kotlin reads only the
+Both apps ignore keys they don't know, so the extra fields are safe. The
+iOS app (next-caltrain-swift) decodes with `Codable` (`struct Schedule: Codable` in
+`Sources/CaltrainSchedule.swift`), and the Android app (next-caltrain-kotlin)
+reads only the
 keys it asks for from an `org.json` `JSONObject` (`Schedule.fromJson` in
 `Schedule.kt`).
 
@@ -156,11 +157,11 @@ deliberately don't patch that, so:
 
 ## Caching
 
-- **`main`:** App Engine's bundled Memcache. It's free, but it's set up by
+- **The `main` branch:** App Engine's bundled Memcache. It's free, but it's set up by
   wrapping a WSGI app (`wrap_wsgi_app`), and FastAPI is ASGI. The plan is to
   run FastAPI behind an ASGI-to-WSGI adapter (`a2wsgi`). This is the first
   thing to prove works on App Engine.
-- **`postgres` branch (later):** Memorystore for Memcached. It needs a
+- **The `postgres` branch (later):** Memorystore for Memcached. It needs a
   Serverless VPC Access connector from App Engine standard, and both cost
   money, which fits a branch that already pays for Cloud SQL.
 
