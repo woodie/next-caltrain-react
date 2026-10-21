@@ -65,7 +65,6 @@ export function TripListScreen ({ vm, act, back, showTrip, showStationSelection,
         {vm.hasManualSelection && (
           <IconButton icon={arrowRotateCcwIcon} label="Back to the next train" onClick={() => act((vm) => vm.resetToNext())} />
         )}
-        <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
         <IconButton icon={arrowsLeftRightIcon} label="Swap stations" onClick={() => act((vm) => vm.swapStations())} />
       </div>
       <div className="toolbar">
@@ -73,7 +72,8 @@ export function TripListScreen ({ vm, act, back, showTrip, showStationSelection,
         <span className="spacer" />
         <StationNames origin={vm.origin} destination={vm.destination} onTap={showStationSelection} />
         <span className="spacer" />
-        <span className="icon-placeholder" />
+        {/* Mirrors the back button across the station names. */}
+        <IconButton icon={calendarIcon} label="Add to calendar" onClick={showCalendar} />
       </div>
       <button
         type="button"
