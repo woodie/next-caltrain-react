@@ -54,11 +54,11 @@ export function StationSelectionScreen ({ vm, act, back }: Props) {
       <StationList title="Evening Station" stations={vm.schedule.southStops} selected={evening} onSelect={setEvening} />
 
       {confirming && (
-        <Dialog title="Stations Defaults" onClose={() => setConfirming(false)}>
+        <Dialog className="alert" title="Stations Defaults" closeIcon={false} onClose={() => setConfirming(false)}>
           <p>Save {morning} as morning and {evening} as evening default stations?</p>
           <DialogActionsBar>
-            <Button onClick={() => { setConfirming(false); back() }}>Cancel</Button>
-            <Button themeColor="primary" onClick={() => { act((vm) => vm.saveStops()); setConfirming(false); back() }}>
+            <Button className="cancel" fillMode="flat" onClick={() => { setConfirming(false); back() }}>Cancel</Button>
+            <Button fillMode="flat" onClick={() => { act((vm) => vm.saveStops()); setConfirming(false); back() }}>
               Save
             </Button>
           </DialogActionsBar>
