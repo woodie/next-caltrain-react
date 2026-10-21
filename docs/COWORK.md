@@ -184,9 +184,10 @@ Verified before writing the design, so they don't need re-checking:
 - **Merging to `main` is deploying.** GitHub Actions deploys every push to
   `main`, so `main` is always what's live; don't deploy by hand (Woodie:
   "having the push and deploy separate could lead to confusion"). Signing
-  in uses Workload Identity Federation (repo variables
-  `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_DEPLOY_SERVICE_ACCOUNT`), with
-  no stored key.
+  in uses Workload Identity Federation with no stored key: the shared pool
+  `github` in project `next-caltrain-feed` (trusts only repos owned by
+  `woodie`) and `github-deploy@next-caltrain-app.iam.gserviceaccount.com`
+  (trusts only next-caltrain-react and next-caltrain-feed).
 - **Only Woodie pushes:** ask "Can I push this?" before any push, PR or
   issue.
 - **Branches and PRs** for implementation, straight to `main` for docs, as in
@@ -229,11 +230,10 @@ Not deployed yet.
 
 ## Next steps
 
-1. Set up Workload Identity Federation for this repo and next-caltrain-feed.
-2. Merge this repo first (App Engine needs the default service before any
+1. Merge this repo first (App Engine needs the default service before any
    other), then next-caltrain-feed.
-3. Port the five spec files from the apps, plus the script that diffs their
+2. Port the five spec files from the apps, plus the script that diffs their
    describe/context/it text against next-caltrain-swift and
    next-caltrain-kotlin.
-4. Depend on next-caltrain-feed's JavaScript client package once it exists,
+3. Depend on next-caltrain-feed's JavaScript client package once it exists,
    instead of `src/lib/Schedule.ts`.

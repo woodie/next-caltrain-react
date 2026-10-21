@@ -122,8 +122,8 @@ Don't run `npm run deploy` by hand; it exists so the workflow and the docs
 agree on one command. The workflow signs in to Google Cloud with Workload
 Identity Federation: GitHub's identity token for the run is exchanged for
 short-lived credentials of a deploy-only service account, so no long-lived
-key is stored anywhere. The repo variables `GCP_WORKLOAD_IDENTITY_PROVIDER`
-and `GCP_DEPLOY_SERVICE_ACCOUNT` name them.
+key is stored anywhere. The workflow names both; they aren't secrets,
+since the account only trusts this repo and next-caltrain-feed.
 
 ## Development
 
