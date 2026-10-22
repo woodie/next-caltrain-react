@@ -53,7 +53,7 @@ export function StationSelectionScreen ({ vm, act, back }: Props) {
 
       {confirming && (
         <ConfirmDialog
-          title="Stations Defaults"
+          title="Station Defaults"
           message={`Save ${morning} as morning and ${evening} as evening default stations?`}
           onCancel={() => { setConfirming(false); back() }}
           onConfirm={() => { act((vm) => vm.saveStops()); setConfirming(false); back() }}

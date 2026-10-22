@@ -313,8 +313,8 @@ button {
 /* The three pills sit on one line; flex: none keeps each at its text's width. */
 .calendar-row > * { flex: none; }
 
-/* Native date and time inputs and the Leave at select, shaped as pills. */
-input.pill, .select-pill select {
+/* The Leave at select, shaped as a pill. */
+.select-pill select {
   font-family: inherit;
   font-size: 16px; /* iOS zooms in on focus below 16px */
   color: var(--app-text);
@@ -322,13 +322,24 @@ input.pill, .select-pill select {
   background: none;
 }
 
-input.pill { padding: 6px 12px; border-radius: 999px; background: var(--icon-circle); }
-
 .select-pill { display: flex; align-items: center; gap: 4px; }
 .select-pill select { appearance: none; padding: 0; }
 
+/* Date and time: our text, with the native input invisibly on top to take the tap. */
+.picker-pill { position: relative; }
+.picker-pill input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  font-size: 16px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* A gray capsule, like the apps' compact date and time pickers. */
-button.pill, .select-pill {
+button.pill, .select-pill, .picker-pill {
   align-self: center;
   padding: 7px 12px;
   border-radius: 999px;
@@ -343,7 +354,7 @@ button.pill, .select-pill {
 
 @media (max-width: 389px) {
   .calendar-row { gap: 6px; }
-  button.pill, .select-pill { font-size: 16px; padding: 7px 10px; }
+  button.pill, .select-pill, .picker-pill { font-size: 16px; padding: 7px 10px; }
 }
 
 /* The event as it will be added, laid out like a phone's New Event screen. */
@@ -371,31 +382,32 @@ button.pill, .select-pill {
 /* The toolbar's green check. */
 .icon-button.confirm { color: var(--cal-arrive); }
 
-/* A confirmation shaped like an iOS alert, in a native <dialog>. */
+/* A confirmation shaped like iOS 26's alert, in a native <dialog>. */
 dialog.alert {
-  width: 270px;
-  padding: 0;
+  width: 300px;
+  padding: 24px 20px 20px;
   border: none;
-  border-radius: 14px;
-  overflow: hidden;
-  text-align: center;
+  border-radius: 32px;
   color: var(--app-text);
   background: var(--alert-background);
 }
 
 dialog.alert::backdrop { background: rgb(0 0 0 / 0.4); }
 
-dialog.alert h2 { margin: 20px 16px 4px; font-size: 17px; font-weight: 600; }
+dialog.alert h2 { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
 
-dialog.alert p { margin: 0 16px 20px; font-size: 13px; line-height: 1.4; }
+dialog.alert p { margin: 0 0 20px; font-size: 15px; line-height: 1.35; }
 
-dialog.alert .actions { display: flex; border-top: 1px solid var(--alert-line); }
+dialog.alert .actions { display: flex; gap: 10px; }
 
-dialog.alert .actions button { flex: 1; height: 44px; font-size: 17px; color: var(--cal-past); }
-
-dialog.alert .actions button + button { border-left: 1px solid var(--alert-line); }
-
-dialog.alert .actions button.cancel { font-weight: 600; }
+dialog.alert .actions button {
+  flex: 1;
+  height: 44px;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--alert-line);
+}
 
 /* About */
 .about-content {

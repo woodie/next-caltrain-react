@@ -83,9 +83,16 @@ export async function fetchFromNetwork (
   return schedule
 }
 
-// specialDates and scheduleDate are optional in older feeds.
+// specialDates and scheduleDate are optional in older feeds; the feed abbreviates one station name.
 function withDefaults (json: Schedule): Schedule {
-  return { ...json, specialDates: json.specialDates ?? {}, scheduleDate: json.scheduleDate ?? null }
+  const spell = (stops: string[]) => stops.map((s) => s === 'So San Francisco' ? 'South San Francisco' : s)
+  return {
+    ...json,
+    northStops: spell(json.northStops),
+    southStops: spell(json.southStops),
+    specialDates: json.specialDates ?? {},
+    scheduleDate: json.scheduleDate ?? null,
+  }
 }
 
 export const CaltrainSchedule = {
