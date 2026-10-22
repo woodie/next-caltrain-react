@@ -60,6 +60,16 @@ describe('CalendarTrip', () => {
     })
   })
 
+  describe('.location()', () => {
+    it('names the station', () => {
+      expect(CalendarTrip.location('Palo Alto')).toBe('Palo Alto Caltrain Station')
+    })
+
+    it('spells out South San Francisco', () => {
+      expect(CalendarTrip.location('So San Francisco')).toBe('South San Francisco Caltrain Station')
+    })
+  })
+
   describe('.stamp()', () => {
     it('formats a local date-time', () => {
       expect(CalendarTrip.stamp('2026-05-21', 17 * 60 + 55)).toBe('20260521T175500')

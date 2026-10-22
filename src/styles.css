@@ -359,6 +359,9 @@ button.pill {
   white-space: pre-wrap;
 }
 
+.event > div.titled { display: flex; flex-direction: column; gap: 10px; }
+.event > div.titled hr { margin: 0; border: 0; border-top: 1px solid var(--alert-line); }
+
 /* The toolbar's green check. */
 .k-button.k-button-solid.icon-button.confirm { color: var(--cal-arrive); }
 

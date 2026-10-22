@@ -44,7 +44,8 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
   const addToCalendar = () => {
     if (!planned) return
     const details = CalendarTrip.notes(vm.origin, vm.destination, trains)
-    window.open(CalendarTrip.googleUrl(CalendarTrip.title(vm.destination), isoDate, planned, details), '_blank', 'noopener')
+    const location = CalendarTrip.location(vm.origin)
+    window.open(CalendarTrip.googleUrl(CalendarTrip.title(vm.destination), isoDate, planned, details, location), '_blank', 'noopener')
   }
 
   return (
@@ -74,7 +75,12 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
         <div className="event">
           {planned
             ? <>
-                <div>{CalendarTrip.title(vm.destination)}</div>
+                {/* Title and location share a group, as on a calendar's new-event screen. */}
+                <div className="titled">
+                  <span>{CalendarTrip.title(vm.destination)}</span>
+                  <hr />
+                  <span>{CalendarTrip.location(vm.origin)}</span>
+                </div>
                 <div>{CalendarTrip.notes(vm.origin, vm.destination, trains)}</div>
               </>
             : <div>No train fits that time.</div>}

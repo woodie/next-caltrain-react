@@ -53,6 +53,16 @@ export const CalendarTrip = {
   },
 
   /**
+   * The event location: the boarding station, named the way Google and Apple
+   * Maps know it ("Palo Alto Caltrain Station"), so tapping it in the calendar
+   * finds the station. The feed abbreviates one name.
+   */
+  location (station: string): string {
+    const name = station === 'So San Francisco' ? 'South San Francisco' : station
+    return `${name} Caltrain Station`
+  },
+
+  /**
    * The event description: the route, then the trains. The event's own times
    * already say which one is planned, so the description doesn't mark it.
    */
@@ -74,11 +84,12 @@ export const CalendarTrip = {
   },
 
   /** A Google Calendar link that opens a prefilled event, with no sign-in or API. */
-  googleUrl (title: string, isoDate: string, train: PlannedTrain, details: string): string {
+  googleUrl (title: string, isoDate: string, train: PlannedTrain, details: string, location = ''): string {
     const dates = `${CalendarTrip.stamp(isoDate, train.depart)}/${CalendarTrip.stamp(isoDate, train.arrive)}`
     return 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
       `&text=${encodeURIComponent(title)}&dates=${dates}` +
-      `&ctz=${encodeURIComponent(CALTRAIN_TZ)}&details=${encodeURIComponent(details)}`
+      `&ctz=${encodeURIComponent(CALTRAIN_TZ)}&details=${encodeURIComponent(details)}` +
+      `&location=${encodeURIComponent(location)}`
   },
 
   /** Local ISO date (YYYY-MM-DD) for a Date. */
