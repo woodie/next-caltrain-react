@@ -8,7 +8,7 @@ the design doesn't.
 ## What this is
 
 The Next Caltrain web app, https://next-caltrain-app.appspot.com/: React +
-TypeScript with KendoReact, doing what the iOS and Android apps do, plus a
+TypeScript with no component library, doing what the iOS and Android apps do, plus a
 calendar planner. It also builds and serves its own schedule feed,
 `/feed/schedule.json`, from Caltrain's GTFS, with no server: GitHub Actions
 build the feed, and App Engine serves everything as static files.
@@ -106,11 +106,10 @@ no other service, nothing running between deploys.
   year, so the feed became static files built by GitHub Actions. The
   Cloud SQL instance and Datastore database are deleted, the `feed`
   service is deleted, and `dispatch.yaml` is empty.
-- **KendoReact is what's left of the job-prep stack.** It does real work
-  only on the calendar planner (`DropDownList`, `DateInput`, `DatePicker`,
-  `Button`); the trip list is deliberately not a Grid (it steps instead of
-  scrolling). A Kendo Grid "feed inspector" (full timetables, the GTFS vs
-  PDF diff) is the idea for exercising Kendo properly.
+- **KendoReact was removed too** (2026-10-21, tag `kendo-react` marks the
+  last version with it): its 1.5 MB theme, paid components and
+  desktop-style widgets lost out to the browser's native controls, which
+  give iPhone its own pickers. See "Native controls" in `docs/DESIGN.md`.
 
 ## Conventions here
 
@@ -141,22 +140,14 @@ no other service, nothing running between deploys.
 
 ## Gotchas
 
-- **KendoReact free vs. paid, per component.** Without a license key, a
-  paid component puts a "License key missing" banner and an "Invalid
-  license" watermark over the whole app. `TimePicker` is paid (the console
-  says "TimePicker: all"), hence `DateInput` for the time. `DropDownList`
-  is free unless filterable or virtualized; `DatePicker`, `DateInput`,
-  `Button`, `Dialog` are free. Check the console after adding any
-  component.
-- **Kendo's light and dark themes** are separate stylesheets with
-  `prefers-color-scheme` media queries (`src/main.tsx`), loaded before
-  `styles.css` so the apps' colors win.
-- **Kendo's flat Button** sets `background: none !important`; the round
-  icon buttons use `fillMode="solid"`, recolored.
+- **iOS Safari won't open a picker from code:** `showPicker()` does
+  nothing for a time input there, and focusing a hidden input doesn't open
+  the wheel. The tap has to land on the input itself, so the date and time
+  are visible native inputs shaped as pills.
 - **Vitest stays on 4.x** for penultimate's `vitest >=4.1.0 <5` peer. Vitest
   5 made npm 11.16 crash ("Cannot read properties of null (reading
   'children')") and corrupt the lockfile; `legacy-peer-deps` only hid it
-  and dropped KendoReact's peers.
+  and dropped peer dependencies.
 - **Workflow tokens don't start other workflows:** the switch deploys
   itself, and the update's PRs don't run the CI check. The repo setting
   "Allow GitHub Actions to create and approve pull requests" is on (set
@@ -183,8 +174,8 @@ no other service, nothing running between deploys.
    this feed (their URL is in each app's config), and what to do about
    GTFS's holiday errors.
 3. **Optional:** a forced Update schedule run to exercise the PR path;
-   `npm run compare` for the two-feed comparison; a Kendo Grid feed
-   inspector.
+   `npm run compare` for the two-feed comparison; a feed inspector page
+   (perhaps a Kendo Grid, see `docs/DESIGN.md`).
 4. **Postponed by Woodie:** the Features / Using the app / Development
    block drafted into the Swift and Kotlin READMEs, still uncommitted in
    both repos.

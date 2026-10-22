@@ -1,5 +1,5 @@
-import { chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { IconButton } from './common'
+import { ChevronLeftIcon } from './icons'
 
 interface Props {
   scheduleDate: number | null
@@ -16,7 +16,7 @@ export function AboutScreen ({ scheduleDate, isLoading = false, loadFailed = fal
   return (
     <div className="screen about">
       <div className="toolbar">
-        {back && <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />}
+        {back && <IconButton icon={ChevronLeftIcon} label="Back" onClick={back} />}
       </div>
       <div className="about-content">
         <img src="/icon.png" alt="" width={96} height={96} />
