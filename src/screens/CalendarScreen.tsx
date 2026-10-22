@@ -2,7 +2,7 @@ import { SvgIcon } from '@progress/kendo-react-common'
 import { Calendar } from '@progress/kendo-react-dateinputs'
 import { Popup } from '@progress/kendo-react-popup'
 import { caretAltExpandIcon, checkIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { CalendarTrip, type PlanMode } from '../lib/CalendarTrip'
 import { tripDepart } from '../lib/CaltrainService'
 import { CaltrainSchedule } from '../lib/Schedule'
@@ -24,16 +24,16 @@ interface Props {
   showStationSelection: () => void
 }
 
-// Plan a trip for the calendar, like Google Maps: Leave at / Arrive by, a
-// date and a time, then a prefilled Google Calendar event.
+// The calendar planner: when to travel, then a prefilled Google Calendar event.
 export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
   const [mode, setMode] = useState(modes[0])
   const [time, setTime] = useState(() => initialTime(vm))
   const [date, setDate] = useState(() => initialDate(vm))
   const [showModes, setShowModes] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
-  const modeButton = useRef<HTMLButtonElement>(null)
-  const dateButton = useRef<HTMLButtonElement>(null)
+  // Callback refs into state, so the popups' anchors aren't read from refs during render.
+  const [modeButton, setModeButton] = useState<HTMLButtonElement | null>(null)
+  const [dateButton, setDateButton] = useState<HTMLButtonElement | null>(null)
   // The long date doesn't fit next to the other two on the narrowest phones.
   const narrow = window.innerWidth < 390
   const dateText = date.toLocaleDateString('en-US',
@@ -69,19 +69,15 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
         <button type="button" className="pill" onClick={showStationSelection}>
           {vm.origin} to {vm.destination}
         </button>
-        {/* One line: (Leave at) (Oct 21, 2026) (4:20 PM), date then time like
-            a calendar's own start row, or (10/21/26) on a narrow phone. */}
-        {/* Pill buttons, as on the phones: each opens a picker, and nothing
-            can be typed. Leave at and the date open in Kendo popups (a menu,
-            then a Kendo calendar); Kendo's DropDownButton is a paid component. */}
+        {/* Pills, not text fields; Kendo's DropDownButton and TimePicker are paid. */}
         <div className="calendar-row">
-          <button type="button" ref={modeButton} className="pill" onClick={() => setShowModes(!showModes)}>
+          <button type="button" ref={setModeButton} className="pill" onClick={() => setShowModes(!showModes)}>
             {mode.text} <SvgIcon icon={caretAltExpandIcon} />
           </button>
           <Popup
-            anchor={modeButton.current}
+            anchor={modeButton}
             show={showModes}
-            onMouseDownOutside={(e) => { if (!modeButton.current?.contains(e.event.target as Node)) setShowModes(false) }}
+            onMouseDownOutside={(e) => { if (!modeButton?.contains(e.event.target as Node)) setShowModes(false) }}
           >
             <div className="mode-menu">
               {modes.map((m) => (
@@ -91,20 +87,18 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
               ))}
             </div>
           </Popup>
-          <button type="button" ref={dateButton} className="pill" onClick={() => setShowCalendar(!showCalendar)}>
+          <button type="button" ref={setDateButton} className="pill" onClick={() => setShowCalendar(!showCalendar)}>
             {dateText}
           </button>
           <Popup
-            anchor={dateButton.current}
+            anchor={dateButton}
             show={showCalendar}
             anchorAlign={{ horizontal: 'center', vertical: 'bottom' }}
             popupAlign={{ horizontal: 'center', vertical: 'top' }}
-            onMouseDownOutside={(e) => { if (!dateButton.current?.contains(e.event.target as Node)) setShowCalendar(false) }}
+            onMouseDownOutside={(e) => { if (!dateButton?.contains(e.event.target as Node)) setShowCalendar(false) }}
           >
             <Calendar value={date} onChange={(e) => { setDate(e.value); setShowCalendar(false) }} />
           </Popup>
-          {/* The time is the browser's standard time input, shaped like the
-              other pills (Kendo's TimePicker is a paid component). */}
           <input
             type="time"
             className="pill time-input"
@@ -117,7 +111,6 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
         <div className="event">
           {planned
             ? <>
-                {/* Title and location share a group, as on a calendar's new-event screen. */}
                 <div className="titled">
                   <span>{CalendarTrip.title(vm.destination)}</span>
                   <hr />

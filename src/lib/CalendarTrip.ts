@@ -52,20 +52,13 @@ export const CalendarTrip = {
     return `Caltrain to ${destination}`
   },
 
-  /**
-   * The event location: the boarding station, named the way Google and Apple
-   * Maps know it ("Palo Alto Caltrain Station"), so tapping it in the calendar
-   * finds the station. The feed abbreviates one name.
-   */
+  /** The boarding station, as Maps names it ("Palo Alto Caltrain Station"). */
   location (station: string): string {
     const name = station === 'So San Francisco' ? 'South San Francisco' : station
     return `${name} Caltrain Station`
   },
 
-  /**
-   * The event description: the route, then the trains. The event's own times
-   * already say which one is planned, so the description doesn't mark it.
-   */
+  /** The route, then the trains. */
   notes (origin: string, destination: string, trains: PlannedTrain[]): string {
     return [`${origin} to ${destination}`, ...trains.map(CalendarTrip.line)].join('\n')
   },

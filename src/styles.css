@@ -329,8 +329,7 @@ button.pill {
   background: var(--icon-circle);
   border: 0;
   color: var(--app-text);
-  /* A step under the 17px body text, like the compact pickers on iPhone,
-     so the pills don't read larger than the event below them. */
+  /* A step under the event's 17px, as iPhone's compact pickers are. */
   font-size: 16px;
   line-height: normal;
   white-space: nowrap;
@@ -341,8 +340,7 @@ button.pill {
   button.pill { font-size: 16px; padding: 7px 10px; }
 }
 
-/* The event as it lands in the calendar, laid out like a phone's New Event
-   screen: rounded white groups on a light gray background. */
+/* The event as it will be added, laid out like a phone's New Event screen. */
 .event {
   display: flex;
   flex-direction: column;
