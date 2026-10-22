@@ -14,6 +14,8 @@
   --row-height: 44px;
   --alert-background: #f2f2f2;
   --alert-line: #c6c6c8;
+  --grouped-background: #f2f2f7;
+  --grouped-section: #fff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +29,8 @@
     --app-text: #fff;
     --alert-background: #2c2c2e;
     --alert-line: #48484a;
+    --grouped-background: #1c1c1e;
+    --grouped-section: #2c2c2e;
   }
 }
 
@@ -299,40 +303,71 @@ button {
 
 .calendar-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 8px;
 }
 
-.calendar-row > * { flex: 1; }
+/* The three pills sit on one line; flex: none keeps each at its text's width. */
+.calendar-row > * { flex: none; }
 
-/* Under 16px, iOS zooms the page in when a field gets focus. */
-.calendar-row .k-input, .calendar-row .k-picker { font-size: var(--font-train); }
-
-.schedule-label { color: var(--cal-past); }
-
-.planned-trains {
-  min-height: 90px;
-  line-height: 28px;
-  white-space: pre;
-}
-
-.planned-trains > div {
-  border: 2px solid transparent;
-  border-radius: 8px;
-  padding: 0 8px;
-}
-
-.planned-trains > div.selection-arriving { border-color: var(--cal-arrive); }
-
-/* The one action button in the apps: Kendo's outline style in the apps'
-   text color, rounded like the trip rows, instead of a filled theme color. */
-.k-button.add-to-calendar {
-  align-self: center;
-  padding: 8px 20px;
-  border-radius: 8px;
+/* The standard time input, shaped like the pills. */
+input.pill.time-input {
+  font-family: inherit;
+  font-size: 16px; /* iOS zooms in on focus below 16px */
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--icon-circle);
   color: var(--app-text);
-  border-color: var(--cal-swapped);
 }
+
+/* A gray capsule, like the apps' compact date and time pickers. */
+button.pill {
+  align-self: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--icon-circle);
+  border: 0;
+  color: var(--app-text);
+  /* A step under the event's 17px, as iPhone's compact pickers are. */
+  font-size: 16px;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+@media (max-width: 389px) {
+  .calendar-row { gap: 6px; }
+  button.pill { font-size: 16px; padding: 7px 10px; }
+}
+
+/* The event as it will be added, laid out like a phone's New Event screen. */
+.event {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 20px;
+  background: var(--grouped-background);
+}
+
+.event > div {
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--grouped-section);
+  font-size: 17px;
+  /* pre-wrap, not pre-line: keep the two spaces after each train number. */
+  white-space: pre-wrap;
+}
+
+.event > div.titled { display: flex; flex-direction: column; gap: 10px; }
+.event > div.titled hr { margin: 0; border: 0; border-top: 1px solid var(--alert-line); }
+
+/* The Leave at / Arrive by menu, in a Kendo popup. */
+.mode-menu { display: flex; flex-direction: column; padding: 4px 0; }
+.mode-menu button { display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 17px; text-align: left; }
+
+/* The toolbar's green check. */
+.k-button.k-button-solid.icon-button.confirm { color: var(--cal-arrive); }
 
 /* Kendo's popups (the date and time pickers) can scroll, unlike the app. */
 .k-animation-container, .k-popup { touch-action: auto; }

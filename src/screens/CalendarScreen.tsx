@@ -1,13 +1,13 @@
-import { Button } from '@progress/kendo-react-buttons'
-import { DatePicker } from '@progress/kendo-react-dateinputs'
-import { DropDownList } from '@progress/kendo-react-dropdowns'
-import { calendarIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
+import { SvgIcon } from '@progress/kendo-react-common'
+import { Calendar } from '@progress/kendo-react-dateinputs'
+import { Popup } from '@progress/kendo-react-popup'
+import { caretAltExpandIcon, checkIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { useState } from 'react'
 import { CalendarTrip, type PlanMode } from '../lib/CalendarTrip'
 import { tripDepart } from '../lib/CaltrainService'
-import { CaltrainSchedule, scheduleLabel } from '../lib/Schedule'
+import { CaltrainSchedule } from '../lib/Schedule'
 import type { TripViewModel } from '../lib/TripViewModel'
-import { IconButton, StationNames } from './common'
+import { IconButton } from './common'
 
 const modes: { text: string, value: PlanMode }[] = [
   { text: 'Leave at', value: 'leave' },
@@ -24,12 +24,20 @@ interface Props {
   showStationSelection: () => void
 }
 
-// Plan a trip for the calendar, like Google Maps: Leave at / Arrive by, a
-// time and a date, then a prefilled Google Calendar event.
+// The calendar planner: when to travel, then a prefilled Google Calendar event.
 export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
   const [mode, setMode] = useState(modes[0])
   const [time, setTime] = useState(() => initialTime(vm))
   const [date, setDate] = useState(() => initialDate(vm))
+  const [showModes, setShowModes] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
+  // Callback refs into state, so the popups' anchors aren't read from refs during render.
+  const [modeButton, setModeButton] = useState<HTMLButtonElement | null>(null)
+  const [dateButton, setDateButton] = useState<HTMLButtonElement | null>(null)
+  // The long date doesn't fit next to the other two on the narrowest phones.
+  const narrow = window.innerWidth < 390
+  const dateText = date.toLocaleDateString('en-US',
+    narrow ? { month: 'numeric', day: 'numeric', year: '2-digit' } : { month: 'short', day: 'numeric', year: 'numeric' })
 
   const isoDate = CalendarTrip.isoDate(date)
   const scheduleType = CaltrainSchedule.optionIndex(isoDate, date.getDay(), vm.schedule.specialDates)
@@ -42,8 +50,9 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
 
   const addToCalendar = () => {
     if (!planned) return
-    const details = CalendarTrip.html(vm.origin, vm.destination, trains)
-    window.open(CalendarTrip.googleUrl(CalendarTrip.title(vm.destination), isoDate, planned, details), '_blank', 'noopener')
+    const details = CalendarTrip.notes(vm.origin, vm.destination, trains)
+    const location = CalendarTrip.location(vm.origin)
+    window.open(CalendarTrip.googleUrl(CalendarTrip.title(vm.destination), isoDate, planned, details, location), '_blank', 'noopener')
   }
 
   return (
@@ -51,31 +60,66 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
       <div className="toolbar">
         <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />
         <span className="title centered">Create Calendar Event</span>
-        <span className="icon-placeholder" />
+        {/* Adds the event, the same green check as the station screen's Save. */}
+        {planned
+          ? <IconButton icon={checkIcon} label="Add to Google Calendar" onClick={addToCalendar} className="confirm" />
+          : <span className="icon-placeholder" />}
       </div>
       <div className="calendar-content">
-        <StationNames origin={vm.origin} destination={vm.destination} onTap={showStationSelection} />
+        <button type="button" className="pill" onClick={showStationSelection}>
+          {vm.origin} to {vm.destination}
+        </button>
+        {/* Pills, not text fields; Kendo's DropDownButton and TimePicker are paid. */}
         <div className="calendar-row">
-          <DropDownList data={modes} textField="text" dataItemKey="value" value={mode} onChange={(e) => setMode(e.value)} />
-          <span className="k-input k-input-md k-rounded-md k-input-solid">
-            <input type="time" className="k-input-inner" aria-label="Time" value={timeValue(time)} onChange={(e) => e.target.value && setTime(parseTime(e.target.value))} />
-          </span>
-        </div>
-        <div className="calendar-row">
-          <DatePicker value={date} onChange={(e) => e.value && setDate(e.value)} format="EEE, MMM d" />
-          <span className="schedule-label">{scheduleLabel[scheduleType]}</span>
-        </div>
-        <div className="planned-trains">
-          {trains.length === 0 && <div className="no-trains">No train fits that time.</div>}
-          {trains.map((train) => (
-            <div key={train.label} className={train.selected ? 'selection selection-arriving' : ''}>
-              {CalendarTrip.line(train)}
+          <button type="button" ref={setModeButton} className="pill" onClick={() => setShowModes(!showModes)}>
+            {mode.text} <SvgIcon icon={caretAltExpandIcon} />
+          </button>
+          <Popup
+            anchor={modeButton}
+            show={showModes}
+            onMouseDownOutside={(e) => { if (!modeButton?.contains(e.event.target as Node)) setShowModes(false) }}
+          >
+            <div className="mode-menu">
+              {modes.map((m) => (
+                <button type="button" key={m.value} onClick={() => { setMode(m); setShowModes(false) }}>
+                  <SvgIcon icon={checkIcon} style={{ visibility: m === mode ? 'visible' : 'hidden' }} /> {m.text}
+                </button>
+              ))}
             </div>
-          ))}
+          </Popup>
+          <button type="button" ref={setDateButton} className="pill" onClick={() => setShowCalendar(!showCalendar)}>
+            {dateText}
+          </button>
+          <Popup
+            anchor={dateButton}
+            show={showCalendar}
+            anchorAlign={{ horizontal: 'center', vertical: 'bottom' }}
+            popupAlign={{ horizontal: 'center', vertical: 'top' }}
+            onMouseDownOutside={(e) => { if (!dateButton?.contains(e.event.target as Node)) setShowCalendar(false) }}
+          >
+            <Calendar value={date} onChange={(e) => { setDate(e.value); setShowCalendar(false) }} />
+          </Popup>
+          <input
+            type="time"
+            className="pill time-input"
+            aria-label="Time"
+            value={timeValue(time)}
+            onChange={(e) => e.target.value && setTime(parseTime(e.target.value))}
+          />
         </div>
-        <Button className="add-to-calendar" fillMode="outline" svgIcon={calendarIcon} disabled={!planned} onClick={addToCalendar}>
-          Add to Google Calendar
-        </Button>
+        {/* The event as it lands in the calendar: the title, then the notes. */}
+        <div className="event">
+          {planned
+            ? <>
+                <div className="titled">
+                  <span>{CalendarTrip.title(vm.destination)}</span>
+                  <hr />
+                  <span>{CalendarTrip.location(vm.origin)}</span>
+                </div>
+                <div>{CalendarTrip.notes(vm.origin, vm.destination, trains)}</div>
+              </>
+            : <div>No train fits that time.</div>}
+        </div>
       </div>
     </div>
   )

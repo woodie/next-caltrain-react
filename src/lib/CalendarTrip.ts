@@ -52,14 +52,15 @@ export const CalendarTrip = {
     return `Caltrain to ${destination}`
   },
 
-  /** The event description: the route in bold, then the trains, the planned one in bold. */
-  html (origin: string, destination: string, trains: PlannedTrain[]): string {
-    // HTML collapses the two spaces after the train number; keep both
-    const lines = trains.map((train) => {
-      const line = CalendarTrip.line(train).replace('  ', '&nbsp; ')
-      return train.selected ? `<b>${line}</b>` : line
-    })
-    return [`<b>${origin} to ${destination}</b>`, ...lines].join('<br>')
+  /** The boarding station, as Maps names it ("Palo Alto Caltrain Station"). */
+  location (station: string): string {
+    const name = station === 'So San Francisco' ? 'South San Francisco' : station
+    return `${name} Caltrain Station`
+  },
+
+  /** The route, then the trains. */
+  notes (origin: string, destination: string, trains: PlannedTrain[]): string {
+    return [`${origin} to ${destination}`, ...trains.map(CalendarTrip.line)].join('\n')
   },
 
   /**
@@ -76,11 +77,12 @@ export const CalendarTrip = {
   },
 
   /** A Google Calendar link that opens a prefilled event, with no sign-in or API. */
-  googleUrl (title: string, isoDate: string, train: PlannedTrain, details: string): string {
+  googleUrl (title: string, isoDate: string, train: PlannedTrain, details: string, location = ''): string {
     const dates = `${CalendarTrip.stamp(isoDate, train.depart)}/${CalendarTrip.stamp(isoDate, train.arrive)}`
     return 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
       `&text=${encodeURIComponent(title)}&dates=${dates}` +
-      `&ctz=${encodeURIComponent(CALTRAIN_TZ)}&details=${encodeURIComponent(details)}`
+      `&ctz=${encodeURIComponent(CALTRAIN_TZ)}&details=${encodeURIComponent(details)}` +
+      `&location=${encodeURIComponent(location)}`
   },
 
   /** Local ISO date (YYYY-MM-DD) for a Date. */
