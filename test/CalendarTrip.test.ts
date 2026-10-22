@@ -64,6 +64,10 @@ describe('CalendarTrip', () => {
     it('names the station', () => {
       expect(CalendarTrip.location('Palo Alto')).toBe('Palo Alto Caltrain Station')
     })
+
+    it('spells out South San Francisco', () => {
+      expect(CalendarTrip.location('So San Francisco')).toBe('South San Francisco Caltrain Station')
+    })
   })
 
   describe('.stamp()', () => {
