@@ -1,7 +1,8 @@
-import { DatePicker } from '@progress/kendo-react-dateinputs'
-import { DropDownList } from '@progress/kendo-react-dropdowns'
-import { checkIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
-import { useState } from 'react'
+import { SvgIcon } from '@progress/kendo-react-common'
+import { Calendar } from '@progress/kendo-react-dateinputs'
+import { Popup } from '@progress/kendo-react-popup'
+import { caretAltExpandIcon, checkIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
+import { useRef, useState } from 'react'
 import { CalendarTrip, type PlanMode } from '../lib/CalendarTrip'
 import { tripDepart } from '../lib/CaltrainService'
 import { CaltrainSchedule } from '../lib/Schedule'
@@ -29,8 +30,14 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
   const [mode, setMode] = useState(modes[0])
   const [time, setTime] = useState(() => initialTime(vm))
   const [date, setDate] = useState(() => initialDate(vm))
+  const [showModes, setShowModes] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
+  const modeButton = useRef<HTMLButtonElement>(null)
+  const dateButton = useRef<HTMLButtonElement>(null)
   // The long date doesn't fit next to the other two on the narrowest phones.
   const narrow = window.innerWidth < 390
+  const dateText = date.toLocaleDateString('en-US',
+    narrow ? { month: 'numeric', day: 'numeric', year: '2-digit' } : { month: 'short', day: 'numeric', year: 'numeric' })
 
   const isoDate = CalendarTrip.isoDate(date)
   const scheduleType = CaltrainSchedule.optionIndex(isoDate, date.getDay(), vm.schedule.specialDates)
@@ -64,12 +71,47 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
         </button>
         {/* One line: (Leave at) (Oct 21, 2026) (4:20 PM), date then time like
             a calendar's own start row, or (10/21/26) on a narrow phone. */}
+        {/* Pill buttons, as on the phones: each opens a picker, and nothing
+            can be typed. Leave at and the date open in Kendo popups (a menu,
+            then a Kendo calendar); Kendo's DropDownButton is a paid component. */}
         <div className="calendar-row">
-          <DropDownList data={modes} textField="text" dataItemKey="value" value={mode} rounded="full" onChange={(e) => setMode(e.value)} />
-          <DatePicker value={date} onChange={(e) => e.value && setDate(e.value)} format={narrow ? 'M/d/yy' : 'MMM d, yyyy'} rounded="full" className={narrow ? 'narrow' : undefined} />
-          <span className="k-input k-input-md k-rounded-full k-input-solid time">
-            <input type="time" className="k-input-inner" aria-label="Time" value={timeValue(time)} onChange={(e) => e.target.value && setTime(parseTime(e.target.value))} />
-          </span>
+          <button type="button" ref={modeButton} className="pill" onClick={() => setShowModes(!showModes)}>
+            {mode.text} <SvgIcon icon={caretAltExpandIcon} />
+          </button>
+          <Popup
+            anchor={modeButton.current}
+            show={showModes}
+            onMouseDownOutside={(e) => { if (!modeButton.current?.contains(e.event.target as Node)) setShowModes(false) }}
+          >
+            <div className="mode-menu">
+              {modes.map((m) => (
+                <button type="button" key={m.value} onClick={() => { setMode(m); setShowModes(false) }}>
+                  <SvgIcon icon={checkIcon} style={{ visibility: m === mode ? 'visible' : 'hidden' }} /> {m.text}
+                </button>
+              ))}
+            </div>
+          </Popup>
+          <button type="button" ref={dateButton} className="pill" onClick={() => setShowCalendar(!showCalendar)}>
+            {dateText}
+          </button>
+          <Popup
+            anchor={dateButton.current}
+            show={showCalendar}
+            anchorAlign={{ horizontal: 'center', vertical: 'bottom' }}
+            popupAlign={{ horizontal: 'center', vertical: 'top' }}
+            onMouseDownOutside={(e) => { if (!dateButton.current?.contains(e.event.target as Node)) setShowCalendar(false) }}
+          >
+            <Calendar value={date} onChange={(e) => { setDate(e.value); setShowCalendar(false) }} />
+          </Popup>
+          {/* The time is the browser's standard time input, shaped like the
+              other pills (Kendo's TimePicker is a paid component). */}
+          <input
+            type="time"
+            className="pill time-input"
+            aria-label="Time"
+            value={timeValue(time)}
+            onChange={(e) => e.target.value && setTime(parseTime(e.target.value))}
+          />
         </div>
         {/* The event as it lands in the calendar: the title, then the notes. */}
         <div className="event">
