@@ -28,6 +28,8 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
   const [date, setDate] = useState(() => initialDate(vm))
 
   const isoDate = CalendarTrip.isoDate(date)
+  const dateText = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const timeText = time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
   const scheduleType = CaltrainSchedule.optionIndex(isoDate, date.getDay(), vm.schedule.specialDates)
   const trips = vm.service.routes(vm.origin, vm.destination, scheduleType)
   let minutes = time.getHours() * 60 + time.getMinutes()
@@ -65,20 +67,8 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
             </select>
             <UpDownIcon size={14} />
           </label>
-          <input
-            type="date"
-            className="pill"
-            aria-label="Date"
-            value={isoDate}
-            onChange={(e) => e.target.value && setDate(parseDate(e.target.value))}
-          />
-          <input
-            type="time"
-            className="pill"
-            aria-label="Time"
-            value={timeValue(time)}
-            onChange={(e) => e.target.value && setTime(parseTime(e.target.value))}
-          />
+          <PickerPill type="date" label="Date" text={dateText} value={isoDate} onChange={(v) => setDate(parseDate(v))} />
+          <PickerPill type="time" label="Time" text={timeText} value={timeValue(time)} onChange={(v) => setTime(parseTime(v))} />
         </div>
         {/* The event as it lands in the calendar: the title, then the notes. */}
         <div className="event">
@@ -95,6 +85,23 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
         </div>
       </div>
     </div>
+  )
+}
+
+// A pill showing our text, with the native input invisibly on top, so a tap
+// opens the phone's own picker without the browser's wide field.
+function PickerPill ({ type, label, text, value, onChange }: { type: 'date' | 'time', label: string, text: string, value: string, onChange: (value: string) => void }) {
+  return (
+    <span className="pill picker-pill">
+      {text}
+      <input
+        type={type}
+        aria-label={label}
+        value={value}
+        onClick={(e) => { try { e.currentTarget.showPicker() } catch { /* tap already opened it */ } }}
+        onChange={(e) => e.target.value && onChange(e.target.value)}
+      />
+    </span>
   )
 }
 

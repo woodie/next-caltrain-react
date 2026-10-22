@@ -54,8 +54,7 @@ export const CalendarTrip = {
 
   /** The boarding station, as Maps names it ("Palo Alto Caltrain Station"). */
   location (station: string): string {
-    const name = station === 'So San Francisco' ? 'South San Francisco' : station
-    return `${name} Caltrain Station`
+    return `${station} Caltrain Station`
   },
 
   /** The route, then the trains. */
