@@ -15,15 +15,6 @@
     "schedule:switch": "node scripts/switch-schedule.ts"
   },
   "dependencies": {
-    "@progress/kendo-licensing": "^1.11.3",
-    "@progress/kendo-react-buttons": "^16.2.0",
-    "@progress/kendo-react-common": "^16.2.0",
-    "@progress/kendo-react-dateinputs": "^16.2.0",
-    "@progress/kendo-react-dialogs": "^16.2.0",
-    "@progress/kendo-react-dropdowns": "^16.2.0",
-    "@progress/kendo-react-popup": "^16.2.0",
-    "@progress/kendo-svg-icons": "^5.5.0",
-    "@progress/kendo-theme-default": "^14.6.1",
     "fflate": "^0.8.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

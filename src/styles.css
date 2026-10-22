@@ -109,10 +109,12 @@ button {
 
 .icon-placeholder { width: 44px; height: 44px; flex: none; }
 
-/* Kendo's solid style, recolored to the apps' filled circle. */
-.k-button.k-button-solid.icon-button {
-  border-color: transparent;
-  background-image: none;
+/* The apps' round toolbar buttons. */
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   width: 44px;
   height: 44px;
   flex: none;
@@ -305,24 +307,28 @@ button {
   display: flex;
   justify-content: center;
   gap: 8px;
+  flex-wrap: wrap; /* desktop browsers draw wide date and time fields */
 }
 
 /* The three pills sit on one line; flex: none keeps each at its text's width. */
 .calendar-row > * { flex: none; }
 
-/* The standard time input, shaped like the pills. */
-input.pill.time-input {
+/* Native date and time inputs and the Leave at select, shaped as pills. */
+input.pill, .select-pill select {
   font-family: inherit;
   font-size: 16px; /* iOS zooms in on focus below 16px */
-  padding: 6px 12px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--icon-circle);
   color: var(--app-text);
+  border: 0;
+  background: none;
 }
 
+input.pill { padding: 6px 12px; border-radius: 999px; background: var(--icon-circle); }
+
+.select-pill { display: flex; align-items: center; gap: 4px; }
+.select-pill select { appearance: none; padding: 0; }
+
 /* A gray capsule, like the apps' compact date and time pickers. */
-button.pill {
+button.pill, .select-pill {
   align-self: center;
   padding: 7px 12px;
   border-radius: 999px;
@@ -337,7 +343,7 @@ button.pill {
 
 @media (max-width: 389px) {
   .calendar-row { gap: 6px; }
-  button.pill { font-size: 16px; padding: 7px 10px; }
+  button.pill, .select-pill { font-size: 16px; padding: 7px 10px; }
 }
 
 /* The event as it will be added, laid out like a phone's New Event screen. */
@@ -362,19 +368,13 @@ button.pill {
 .event > div.titled { display: flex; flex-direction: column; gap: 10px; }
 .event > div.titled hr { margin: 0; border: 0; border-top: 1px solid var(--alert-line); }
 
-/* The Leave at / Arrive by menu, in a Kendo popup. */
-.mode-menu { display: flex; flex-direction: column; padding: 4px 0; }
-.mode-menu button { display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 17px; text-align: left; }
-
 /* The toolbar's green check. */
-.k-button.k-button-solid.icon-button.confirm { color: var(--cal-arrive); }
+.icon-button.confirm { color: var(--cal-arrive); }
 
-/* Kendo's popups (the date and time pickers) can scroll, unlike the app. */
-.k-animation-container, .k-popup { touch-action: auto; }
-
-/* A confirmation shaped like an iOS alert, not Kendo's full-width dialog. */
-.alert .k-dialog {
+/* A confirmation shaped like an iOS alert, in a native <dialog>. */
+dialog.alert {
   width: 270px;
+  padding: 0;
   border: none;
   border-radius: 14px;
   overflow: hidden;
@@ -383,57 +383,19 @@ button.pill {
   background: var(--alert-background);
 }
 
-.alert .k-dialog .k-window-titlebar {
-  justify-content: center;
-  padding: 20px 16px 4px;
-  border: none;
-  background: none;
-}
+dialog.alert::backdrop { background: rgb(0 0 0 / 0.4); }
 
-.alert .k-dialog .k-window-title {
-  flex: none;
-  font-size: 17px;
-  font-weight: 600;
-}
+dialog.alert h2 { margin: 20px 16px 4px; font-size: 17px; font-weight: 600; }
 
-.alert .k-dialog .k-window-content {
-  padding: 0 16px 20px;
-  font-size: 13px;
-  line-height: 1.4;
-}
+dialog.alert p { margin: 0 16px 20px; font-size: 13px; line-height: 1.4; }
 
-.alert .k-dialog .k-window-content p { margin: 0; }
+dialog.alert .actions { display: flex; border-top: 1px solid var(--alert-line); }
 
-.alert .k-dialog .k-actions {
-  margin: 0;
-  padding: 0;
-  gap: 0;
-  border-top: 1px solid var(--alert-line);
-  position: relative;
-}
+dialog.alert .actions button { flex: 1; height: 44px; font-size: 17px; color: var(--cal-past); }
 
-.alert .k-dialog .k-actions .k-button {
-  flex: 1;
-  height: 44px;
-  border-radius: 0;
-  font-size: 17px;
-  color: var(--cal-past);
-  outline: none;
-}
+dialog.alert .actions button + button { border-left: 1px solid var(--alert-line); }
 
-.alert .k-dialog .k-actions .k-button::before,
-.alert .k-dialog .k-actions .k-button::after { opacity: 0; }
-
-.alert .k-dialog .k-actions::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  border-left: 1px solid var(--alert-line);
-}
-
-.alert .k-dialog .k-actions .k-button.cancel { font-weight: 600; }
+dialog.alert .actions button.cancel { font-weight: 600; }
 
 /* About */
 .about-content {

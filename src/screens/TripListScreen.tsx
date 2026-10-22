@@ -1,4 +1,3 @@
-import { arrowRotateCcwIcon, arrowsLeftRightIcon, calendarIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { CaltrainService, type Trip, tripDepart } from '../lib/CaltrainService'
 import { GoodTimes } from '../lib/GoodTimes'
@@ -7,6 +6,7 @@ import type { TripViewModel } from '../lib/TripViewModel'
 import { useBlink } from '../useTripViewModel'
 import { rowHeight, useStepDrag } from '../useStepDrag'
 import { IconButton, StationNames } from './common'
+import { CalendarIcon, ChevronLeftIcon, ResetIcon, SwapIcon } from './icons'
 
 interface Props {
   vm: TripViewModel
@@ -63,17 +63,17 @@ export function TripListScreen ({ vm, act, back, showTrip, showStationSelection,
         <span className="title">{serviceLabel}</span>
         <span className="spacer" />
         {vm.hasManualSelection && (
-          <IconButton icon={arrowRotateCcwIcon} label="Back to the next train" onClick={() => act((vm) => vm.resetToNext())} />
+          <IconButton icon={ResetIcon} label="Back to the next train" onClick={() => act((vm) => vm.resetToNext())} />
         )}
-        <IconButton icon={arrowsLeftRightIcon} label="Swap stations" onClick={() => act((vm) => vm.swapStations())} />
+        <IconButton icon={SwapIcon} label="Swap stations" onClick={() => act((vm) => vm.swapStations())} />
       </div>
       <div className="toolbar second-row">
-        <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />
+        <IconButton icon={ChevronLeftIcon} label="Back" onClick={back} />
         <span className="spacer" />
         <StationNames origin={vm.origin} destination={vm.destination} onTap={showStationSelection} />
         <span className="spacer" />
         {/* Below swap, mirroring the back button; the same spot as on the home screen. */}
-        <IconButton icon={calendarIcon} label="Create calendar event" onClick={showCalendar} />
+        <IconButton icon={CalendarIcon} label="Create calendar event" onClick={showCalendar} />
       </div>
       <button
         type="button"

@@ -1,8 +1,8 @@
-import { chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { CaltrainService, type Trip } from '../lib/CaltrainService'
 import { GoodTimes } from '../lib/GoodTimes'
 import type { Schedule, ScheduleType } from '../lib/Schedule'
 import { IconButton } from './common'
+import { ChevronLeftIcon } from './icons'
 
 type StopRole = 'past' | 'origin' | 'destination' | 'transfer' | 'future'
 
@@ -57,7 +57,7 @@ export function TripDetailScreen ({ trip, schedule, origin, destination, schedul
   return (
     <div className="screen trip-detail">
       <div className="toolbar">
-        <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />
+        <IconButton icon={ChevronLeftIcon} label="Back" onClick={back} />
         <span className="title centered">{title}</span>
         <span className="icon-placeholder" />
       </div>

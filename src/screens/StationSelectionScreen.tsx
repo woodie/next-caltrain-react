@@ -1,9 +1,7 @@
-import { Button } from '@progress/kendo-react-buttons'
-import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs'
-import { arrowRotateCcwIcon, checkIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { TripViewModel } from '../lib/TripViewModel'
 import { IconButton } from './common'
+import { CheckIcon, ChevronLeftIcon, ResetIcon } from './icons'
 
 interface Props {
   vm: TripViewModel
@@ -40,12 +38,12 @@ export function StationSelectionScreen ({ vm, act, back }: Props) {
   return (
     <div className="screen station-selection">
       <div className="toolbar">
-        <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />
+        <IconButton icon={ChevronLeftIcon} label="Back" onClick={back} />
         <span className="spacer" />
         {!isAlreadyDefault && (
           <>
-            <IconButton icon={arrowRotateCcwIcon} label="Restore default stations" onClick={restoreDefaults} />
-            <IconButton icon={checkIcon} label="Save as default stations" onClick={() => setConfirming(true)} />
+            <IconButton icon={ResetIcon} label="Restore default stations" onClick={restoreDefaults} />
+            <IconButton icon={CheckIcon} label="Save as default stations" onClick={() => setConfirming(true)} />
           </>
         )}
       </div>
@@ -54,15 +52,12 @@ export function StationSelectionScreen ({ vm, act, back }: Props) {
       <StationList title="Evening Station" stations={vm.schedule.southStops} selected={evening} onSelect={setEvening} />
 
       {confirming && (
-        <Dialog className="alert" title="Stations Defaults" closeIcon={false} onClose={() => setConfirming(false)}>
-          <p>Save {morning} as morning and {evening} as evening default stations?</p>
-          <DialogActionsBar>
-            <Button className="cancel" fillMode="flat" onClick={() => { setConfirming(false); back() }}>Cancel</Button>
-            <Button fillMode="flat" onClick={() => { act((vm) => vm.saveStops()); setConfirming(false); back() }}>
-              Save
-            </Button>
-          </DialogActionsBar>
-        </Dialog>
+        <ConfirmDialog
+          title="Stations Defaults"
+          message={`Save ${morning} as morning and ${evening} as evening default stations?`}
+          onCancel={() => { setConfirming(false); back() }}
+          onConfirm={() => { act((vm) => vm.saveStops()); setConfirming(false); back() }}
+        />
       )}
     </div>
   )
@@ -100,5 +95,21 @@ function StationList ({ title, stations, selected, onSelect }: ListProps) {
         ))}
       </div>
     </section>
+  )
+}
+
+// An iOS-style alert, in the browser's own modal <dialog>.
+function ConfirmDialog ({ title, message, onCancel, onConfirm }: { title: string, message: string, onCancel: () => void, onConfirm: () => void }) {
+  const dialog = useRef<HTMLDialogElement>(null)
+  useEffect(() => { dialog.current?.showModal() }, [])
+  return (
+    <dialog ref={dialog} className="alert" onCancel={onCancel}>
+      <h2>{title}</h2>
+      <p>{message}</p>
+      <div className="actions">
+        <button type="button" className="cancel" onClick={onCancel}>Cancel</button>
+        <button type="button" onClick={onConfirm}>Save</button>
+      </div>
+    </dialog>
   )
 }

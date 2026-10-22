@@ -11,11 +11,11 @@ Live countdown to your next Caltrain, in the browser.
 
 https://next-caltrain-app.appspot.com/
 
-A React + TypeScript web app, built with KendoReact, that does what the
-Next Caltrain iOS and Android apps do. It works out which schedule runs
-today (weekday, weekend or holiday), always has a train selected, and
-counts down to it. Drag on the countdown circle or the train list to step
-to earlier or later trains.
+A React + TypeScript web app that does what the Next Caltrain iOS and
+Android apps do. It works out which schedule runs today (weekday,
+weekend or holiday), always has a train selected, and counts down to it.
+Drag on the countdown circle or the train list to step to earlier or
+later trains.
 
 ## How it gets its data
 

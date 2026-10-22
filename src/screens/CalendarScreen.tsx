@@ -1,13 +1,10 @@
-import { SvgIcon } from '@progress/kendo-react-common'
-import { Calendar } from '@progress/kendo-react-dateinputs'
-import { Popup } from '@progress/kendo-react-popup'
-import { caretAltExpandIcon, checkIcon, chevronLeftIcon } from '@progress/kendo-svg-icons'
 import { useState } from 'react'
 import { CalendarTrip, type PlanMode } from '../lib/CalendarTrip'
 import { tripDepart } from '../lib/CaltrainService'
 import { CaltrainSchedule } from '../lib/Schedule'
 import type { TripViewModel } from '../lib/TripViewModel'
 import { IconButton } from './common'
+import { CheckIcon, ChevronLeftIcon, UpDownIcon } from './icons'
 
 const modes: { text: string, value: PlanMode }[] = [
   { text: 'Leave at', value: 'leave' },
@@ -29,15 +26,6 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
   const [mode, setMode] = useState(modes[0])
   const [time, setTime] = useState(() => initialTime(vm))
   const [date, setDate] = useState(() => initialDate(vm))
-  const [showModes, setShowModes] = useState(false)
-  const [showCalendar, setShowCalendar] = useState(false)
-  // Callback refs into state, so the popups' anchors aren't read from refs during render.
-  const [modeButton, setModeButton] = useState<HTMLButtonElement | null>(null)
-  const [dateButton, setDateButton] = useState<HTMLButtonElement | null>(null)
-  // The long date doesn't fit next to the other two on the narrowest phones.
-  const narrow = window.innerWidth < 390
-  const dateText = date.toLocaleDateString('en-US',
-    narrow ? { month: 'numeric', day: 'numeric', year: '2-digit' } : { month: 'short', day: 'numeric', year: 'numeric' })
 
   const isoDate = CalendarTrip.isoDate(date)
   const scheduleType = CaltrainSchedule.optionIndex(isoDate, date.getDay(), vm.schedule.specialDates)
@@ -58,50 +46,35 @@ export function CalendarScreen ({ vm, back, showStationSelection }: Props) {
   return (
     <div className="screen calendar">
       <div className="toolbar">
-        <IconButton icon={chevronLeftIcon} label="Back" onClick={back} />
+        <IconButton icon={ChevronLeftIcon} label="Back" onClick={back} />
         <span className="title centered">Create Calendar Event</span>
         {/* Adds the event, the same green check as the station screen's Save. */}
         {planned
-          ? <IconButton icon={checkIcon} label="Add to Google Calendar" onClick={addToCalendar} className="confirm" />
+          ? <IconButton icon={CheckIcon} label="Add to Google Calendar" onClick={addToCalendar} className="confirm" />
           : <span className="icon-placeholder" />}
       </div>
       <div className="calendar-content">
         <button type="button" className="pill" onClick={showStationSelection}>
           {vm.origin} to {vm.destination}
         </button>
-        {/* Pills, not text fields; Kendo's DropDownButton and TimePicker are paid. */}
+        {/* Native controls as pills, so iPhone shows its own pickers. */}
         <div className="calendar-row">
-          <button type="button" ref={setModeButton} className="pill" onClick={() => setShowModes(!showModes)}>
-            {mode.text} <SvgIcon icon={caretAltExpandIcon} />
-          </button>
-          <Popup
-            anchor={modeButton}
-            show={showModes}
-            onMouseDownOutside={(e) => { if (!modeButton?.contains(e.event.target as Node)) setShowModes(false) }}
-          >
-            <div className="mode-menu">
-              {modes.map((m) => (
-                <button type="button" key={m.value} onClick={() => { setMode(m); setShowModes(false) }}>
-                  <SvgIcon icon={checkIcon} style={{ visibility: m === mode ? 'visible' : 'hidden' }} /> {m.text}
-                </button>
-              ))}
-            </div>
-          </Popup>
-          <button type="button" ref={setDateButton} className="pill" onClick={() => setShowCalendar(!showCalendar)}>
-            {dateText}
-          </button>
-          <Popup
-            anchor={dateButton}
-            show={showCalendar}
-            anchorAlign={{ horizontal: 'center', vertical: 'bottom' }}
-            popupAlign={{ horizontal: 'center', vertical: 'top' }}
-            onMouseDownOutside={(e) => { if (!dateButton?.contains(e.event.target as Node)) setShowCalendar(false) }}
-          >
-            <Calendar value={date} onChange={(e) => { setDate(e.value); setShowCalendar(false) }} />
-          </Popup>
+          <label className="pill select-pill">
+            <select aria-label="Leave at or arrive by" value={mode.value} onChange={(e) => setMode(modes.find((m) => m.value === e.target.value) ?? modes[0])}>
+              {modes.map((m) => <option key={m.value} value={m.value}>{m.text}</option>)}
+            </select>
+            <UpDownIcon size={14} />
+          </label>
+          <input
+            type="date"
+            className="pill"
+            aria-label="Date"
+            value={isoDate}
+            onChange={(e) => e.target.value && setDate(parseDate(e.target.value))}
+          />
           <input
             type="time"
-            className="pill time-input"
+            className="pill"
             aria-label="Time"
             value={timeValue(time)}
             onChange={(e) => e.target.value && setTime(parseTime(e.target.value))}
@@ -136,6 +109,11 @@ function initialTime (vm: TripViewModel): Date {
 
 function timeValue (d: Date): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+function parseDate (value: string): Date {
+  const [y, m, d] = value.split('-').map(Number)
+  return new Date(y, m - 1, d)
 }
 
 function parseTime (value: string): Date {

@@ -1,4 +1,3 @@
-import { arrowRotateCcwIcon, arrowsLeftRightIcon, calendarIcon } from '@progress/kendo-svg-icons'
 import { CaltrainService, tripDepart } from '../lib/CaltrainService'
 import { GoodTimes } from '../lib/GoodTimes'
 import { scheduleLabel } from '../lib/Schedule'
@@ -6,6 +5,7 @@ import type { TripViewModel } from '../lib/TripViewModel'
 import { useBlink } from '../useTripViewModel'
 import { useStepDrag } from '../useStepDrag'
 import { IconButton, StationNames } from './common'
+import { CalendarIcon, ResetIcon, SwapIcon } from './icons'
 
 interface Props {
   vm: TripViewModel
@@ -51,14 +51,14 @@ export function HomeScreen ({ vm, act, showTripList, showStationSelection, showA
         <button type="button" className="title" onClick={showAbout}>Next Caltrain</button>
         <span className="spacer" />
         {vm.hasManualSelection && (
-          <IconButton icon={arrowRotateCcwIcon} label="Back to the next train" onClick={() => act((vm) => vm.resetToNext())} />
+          <IconButton icon={ResetIcon} label="Back to the next train" onClick={() => act((vm) => vm.resetToNext())} />
         )}
-        <IconButton icon={arrowsLeftRightIcon} label="Swap stations" onClick={() => act((vm) => vm.swapStations())} />
+        <IconButton icon={SwapIcon} label="Swap stations" onClick={() => act((vm) => vm.swapStations())} />
       </div>
       {/* Below swap, where the trip list has it too. */}
       <div className="toolbar second-row">
         <span className="spacer" />
-        <IconButton icon={calendarIcon} label="Create calendar event" onClick={showCalendar} />
+        <IconButton icon={CalendarIcon} label="Create calendar event" onClick={showCalendar} />
       </div>
 
       <div

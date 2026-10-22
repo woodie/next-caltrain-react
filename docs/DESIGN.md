@@ -6,9 +6,10 @@
    touch behavior and their specs.
 2. **Be a clean example of a React app reading a feed.** The app knows the
    feed's format and nothing about where it comes from.
-3. **Learn KendoReact.** The job-prep stack's server side (FastAPI and
-   SQLAlchemy) was tried and retired: a schedule that changes once a year
-   doesn't need a server or a database.
+3. **No component library.** The job-prep stack (FastAPI, SQLAlchemy,
+   KendoReact) was tried and retired: a schedule that changes once a year
+   needs no server or database, and the browser's own controls are what
+   iPhone users expect.
 4. **No servers to run:** the schedule is built by GitHub Actions and served
    as a static file.
 
@@ -166,33 +167,22 @@ and `TripViewModel`, keeping their names and structure so the specs carry
 over line for line. `TripViewModel` is a plain class, as in the apps;
 `useTripViewModel` wraps it for React and ticks it every second.
 
-## KendoReact
+## Native controls
 
-- **Components:** `Button` with KendoReact's SVG icons for the round toolbar
-  buttons, `Dialog` for saving default stations, and, on the calendar
-  screen, `DropDownList` (Leave at / Arrive by), `DateInput` (the time),
-  `DatePicker` and a primary `Button`.
-- **Free tier only, so no license key:** every component above is free.
-  Some aren't, and Kendo checks per component: without a key, a paid one
-  puts a "License key missing" banner and an "Invalid license" watermark
-  over the whole app. `TimePicker` is paid ("TimePicker: all", says the
-  console), which is why the time is a `DateInput` with spinners.
-  `DropDownList` is free unless it's filterable or virtualized. Check
-  Telerik's [free vs. premium list](https://www.telerik.com/kendo-react-ui/components/getting-started/free-vs-premium)
-  before adding a component, and look for the console warning after.
-- **Theme:** Kendo's `default-main` and `default-main-dark`, each loaded as
-  its own stylesheet with a `prefers-color-scheme` media query (they style
-  the same classes, so they can't both be imported), following the phone's
-  light or dark setting like the apps. They load before `src/styles.css`,
-  so the apps' own colors (from `AppStyle.swift`) win.
-- **One action button,** Add to Google Calendar, since the apps' other
-  buttons only navigate. It's Kendo's outline style in the apps' text color,
-  not a filled theme color.
-- **The trip list isn't a Grid.** KendoReact's Grid scrolls its rows, and
-  the trip list must step instead, so it's a custom row layout.
-- **Styling Kendo to someone else's design:** the flat Button style sets
-  `background: none !important`, so the round buttons use the solid style,
-  recolored.
+- **No component library.** Buttons, the date and time inputs, the Leave
+  at `<select>` and the station-defaults `<dialog>` are the browser's own,
+  so iPhone shows its own pickers and sheets, like the Swift app. Desktop
+  browsers draw them their own way; nobody is expected to use the app on
+  a desktop.
+- **Icons** are six inline SVGs in `src/screens/icons.tsx`.
+- **KendoReact was tried and removed** (tag `kendo-react`, 2026-10-21): its
+  theme was about 1.5 MB of CSS against the app's 7 KB, several useful
+  components (TimePicker, DropDownButton) are paid, and its widgets
+  replaced the ones iPhone provides. A Kendo Grid "feed inspector" (full
+  timetables, the GTFS vs PDF diff) would still be a fair use of it, as a
+  separate page.
+- **The trip list isn't a grid:** it steps instead of scrolling, so it's a
+  custom row layout.
 
 ## Tests
 
