@@ -166,10 +166,13 @@ no other service, nothing running between deploys.
 
 ## Next steps
 
-1. **Port the five spec files** from the apps (see "Conventions"), plus a
-   script that diffs their describe/context/it text against
-   next-caltrain-swift and next-caltrain-kotlin. The core logic in
-   `src/lib` has no specs yet.
+1. **A script that diffs the spec text** against next-caltrain-swift and
+   next-caltrain-kotlin. The five spec files were ported 2026-10-23
+   (`test/SpecFixtures.ts` is the apps' fixture; `schedule.test.ts` became
+   `SchedulePipeline.test.ts`, since macOS can't hold it beside
+   `Schedule.test.ts`). Text differs only in method-name `describe`s
+   (`.optionIndex()`), constants (`Weekday`), and `Schedule.fetchFromNetwork()`,
+   which takes Kotlin's wording because this port also caches.
 2. **After Woodie's Caltrain meeting:** decide whether the apps switch to
    this feed (their URL is in each app's config), and what to do about
    GTFS's holiday errors.
