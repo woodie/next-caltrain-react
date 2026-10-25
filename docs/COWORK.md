@@ -175,7 +175,13 @@ no other service, nothing running between deploys.
    which takes Kotlin's wording because this port also caches.
 2. **After Woodie's Caltrain meeting:** decide whether the apps switch to
    this feed (their URL is in each app's config), and what to do about
-   GTFS's holiday errors.
+   GTFS's holiday errors. Longer term, Woodie plans to retire the
+   next-caltrain-pwa server (it costs nothing, so there's no hurry). Its
+   feed cache already matches this one (`max-age=600`, checked 2026-10-23).
+   Installed apps keep requesting its URL, so redirect
+   `/feed/schedule.json` here or leave a frozen copy. Its root
+   `/schedule.json` exists only for the iOS 1.0 review build
+   (next-caltrain-swift's COWORK); check its logs before dropping it.
 3. **Optional:** a forced Update schedule run to exercise the PR path;
    `npm run compare` for the two-feed comparison; a feed inspector page
    (perhaps a Kendo Grid, see `docs/DESIGN.md`).
