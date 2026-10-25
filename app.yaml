@@ -12,13 +12,16 @@ handlers:
   expiration: 5m
 
 # The schedule feed the apps read, plus every dated schedule. A short cache,
-# so a schedule switch reaches everyone within minutes.
+# so a schedule switch reaches everyone within minutes. Open to any origin,
+# so the PWA and the KaiOS app can read it from their own sites.
 - url: /feed/(.*\.json)$
   static_files: dist/feed/\1
   upload: dist/feed/.*\.json$
   mime_type: application/json
   secure: always
   expiration: 10m
+  http_headers:
+    Access-Control-Allow-Origin: "*"
 
 # Vite's assets have content hashes in their names, so they can be cached long.
 - url: /assets
