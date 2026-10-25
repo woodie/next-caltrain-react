@@ -173,6 +173,8 @@ button {
 
 /* Trip list: fixed rows that step instead of scrolling. */
 .status {
+  /* Only as wide as its words, so a low tap on Back or Calendar can't cycle the schedule. */
+  align-self: center;
   height: var(--row-height);
   font-size: var(--font-blurb);
   white-space: nowrap;
