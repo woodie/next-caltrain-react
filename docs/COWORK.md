@@ -35,19 +35,11 @@ own docs still call the reference, has fallen behind.
 - **Live:** the app (home, trip list, trip detail, stations, about, and the
   "Create Calendar Event" planner) and the static GTFS feed. Checked on
   Woodie's iPhone in Chrome, light and dark.
-- **The feed is not production yet.** The iOS and Android apps still read
-  `https://next-caltrain-pwa.appspot.com/feed/schedule.json` (hand-maintained
-  holidays). Woodie is meeting Caltrain staff first; don't point the apps
-  at this feed until he says so.
-- **The two feeds differ only where GTFS disagrees with Caltrain's PDF:**
-  stations, weekday, weekend and `scheduleDate` are identical; the holiday
-  tables (Tamien stops on Local trains, Diridon times, College Park on #143
-  vs #141) and special dates (GTFS's MLK Day 2027-01-27 instead of 01-18,
-  and nothing after the timetable ends 2027-01-31) differ. These are the
-  discrepancies in next-caltrain-pwa's `docs/HOLIDAY.md`, the agenda for
-  that meeting. To recompare, download both with `curl --compressed` (App
-  Engine sometimes sends gzip unasked) and compare each key with
-  `jq -S`.
+- **This is the production feed.** The PWA and KaiOS app read it, and so
+  do the next iOS and Android builds. next-caltrain-pwa's pipeline is
+  retired; it only keeps a frozen copy for the iOS 1.3 build in App Review.
+- **Known GTFS issue:** MLK Day 2027 is listed as January 27 instead of 18
+  (`docs/DATA_QUALITY.md`, for Caltrain).
 - **The Update schedule workflow** ran by hand once (no new timetable, as
   expected). Its pull-request path hasn't run on GitHub yet; a forced run
   would exercise it (close that PR unmerged).

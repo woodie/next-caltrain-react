@@ -75,7 +75,7 @@ changes. It can also be run by hand.
 - **Holidays come from GTFS alone,** as do the special dates (from
   `calendar_dates.txt`: weekend service on a weekday is `1`, the modified
   schedule is `2`). Where GTFS disagrees with Caltrain's published PDF
-  (see next-caltrain-pwa's `docs/HOLIDAY.md`), this feed shows GTFS's
+  (see `docs/DATA_QUALITY.md`), this feed shows GTFS's
   version, e.g. MLK Day 2027 as January 27 rather than 18.
 - **Timetables are formatted one train per line,** so a pull request shows
   exactly which trains changed.
